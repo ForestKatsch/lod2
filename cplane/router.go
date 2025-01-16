@@ -21,7 +21,9 @@ func Router() chi.Router {
 
 	// Define a basic route
 	r.Get("/status", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(appStartTime.String()))
+		// Return number of seconds since the app started
+		var uptime = time.Since(appStartTime).Seconds()
+		w.Write([]byte("Uptime: " + (time.Duration(uptime) * time.Second).String()))
 	})
 
 	return r
