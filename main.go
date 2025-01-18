@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/cors"
 
 	"lod2/cplane"
+	"lod2/home"
 
 	"github.com/go-chi/chi/v5/middleware"
 
@@ -49,6 +50,7 @@ func main() {
 	hr := hostrouter.New()
 
 	hr.Map("cplane.lod2.zip", cplane.Router())
+	hr.Map("*", home.Router())
 
 	r.Mount("/__cplane", cplane.Router())
 	r.Mount("/", hr)

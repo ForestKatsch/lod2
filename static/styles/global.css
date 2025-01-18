@@ -1,0 +1,128 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 100%;
+  font-weight: inherit;
+  text-decoration: none;
+  color: inherit;
+
+  border: 0;
+  border-radius: 0;
+  background: none;
+  list-style: none;
+}
+
+:root {
+  --bg: #000;
+  --fg: #fff;
+
+  --accent: #5af;
+  --accent-fg: #000;
+
+  --opacity-2: 0.5;
+
+  --fg-2: rgba(255, 255, 255, var(--opacity-2));
+
+  --border-width: 1px;
+
+  --elevation-gap: 4px;
+
+  --padding-x: 1.1rem;
+  --padding-y: 0.7rem;
+  --button-gap: 2px;
+}
+
+/* selection color */
+::selection {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+html {
+  background-color: var(--bg);
+  color: var(--fg);
+
+  font-family: "Berkeley Mono", Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+
+  width: 100%;
+  min-height: 100vh;
+}
+
+body {
+  min-height: 100vh;
+  max-width: 100ch;
+  margin: 0 auto;
+  padding: 1rem;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.s-button {
+  padding: var(--padding-y) var(--padding-x);
+
+  &:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+}
+
+#header {
+  background: var(--bg);
+
+  position: sticky;
+  top: 1rem;
+  gap: var(--button-gap);
+
+  margin-right: calc(var(--elevation-gap) * 2);
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  border: 1px solid var(--fg);
+  padding: var(--button-gap);
+
+  .header__hr {
+    border: none;
+    border-top: 1px dashed var(--fg);
+    height: var(--border-width);
+    flex: 1;
+    opacity: var(--opacity-2);
+    margin: 0 0.5rem;
+  }
+}
+
+.s-elevated {
+  --x-shadow-1a: calc(var(--elevation-gap) - var(--border-width));
+  --x-shadow-1b: calc(var(--elevation-gap));
+  --x-shadow-2a: calc(var(--elevation-gap) * 2 - var(--border-width));
+  --x-shadow-2b: calc(var(--elevation-gap) * 2);
+  --x-shadow-3: calc(var(--elevation-gap) * 3);
+
+  box-shadow: var(--x-shadow-1a) var(--x-shadow-1a) 0 var(--bg), var(--x-shadow-1b) var(--x-shadow-1b) 0 var(--fg),
+    var(--x-shadow-2a) var(--x-shadow-2a) 0 var(--bg), var(--x-shadow-2b) var(--x-shadow-2b) 0 var(--fg),
+    0 0 0 var(--x-shadow-3) var(--bg);
+}
+
+#content {
+  margin: 1rem 2rem;
+  flex-grow: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#footer {
+  font-size: 60%;
+  margin: 1rem 0;
+
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1em;
+  padding: 1em var(--padding-x);
+}
