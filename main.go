@@ -58,5 +58,9 @@ func main() {
 	fmt.Printf("Listening at localhost:%d\n", port)
 
 	// Start the server
-	http.ListenAndServe(fmt.Sprintf("localhost:%d", port), r)
+	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", port), r)
+
+	if err != nil {
+		panic(err)
+	}
 }
