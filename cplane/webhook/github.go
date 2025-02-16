@@ -3,6 +3,7 @@ package webhook
 import (
 	"fmt"
 	"lod2/cplane/redeploy"
+	"log"
 	"net/http"
 	"os"
 
@@ -22,7 +23,7 @@ func init() {
 func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	if githubWebhookSecret == "" {
 		http.Error(w, "Could not validate secret", http.StatusInternalServerError)
-		fmt.Printf("! Cannot handle GitHub webhook without environment variable %s\n", githubWebhookSecretEnv)
+		log.Printf("cannot handle GitHub webhook without environment variable %s", githubWebhookSecretEnv)
 		return
 	}
 
@@ -42,7 +43,7 @@ func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	switch event := event.(type) {
 	case *github.PushEvent:
 		var ref = *event.Ref
-		fmt.Printf("Received a push event for %s\n", ref)
+		log.Printf("received a push event for ref '%s'", ref)
 
 		if ref == "refs/heads/main" {
 			w.WriteHeader(http.StatusOK)
@@ -52,7 +53,7 @@ func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Printf("Ignoring push event for %s\n", ref)
+		log.Printf("ignoring push event for non-main ref '%s'", ref)
 	default:
 		http.Error(w, "Unhandled event type", http.StatusNotImplemented)
 	}

@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 
+	"lod2/auth"
+	"lod2/config"
 	"lod2/cplane"
 	"lod2/home"
 
@@ -16,11 +19,11 @@ import (
 	"github.com/go-chi/hostrouter"
 )
 
-// TODO: environment variable
-const port = 10800
-
 func main() {
+	config.Init()
+	auth.Init()
 
+	// The primary router.
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -33,9 +36,8 @@ func main() {
 		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		MaxAge:           300,
 	}))
 
 	// Set a timeout value on the request context (ctx), that will signal
@@ -52,13 +54,17 @@ func main() {
 	hr.Map("cplane.lod2.zip", cplane.Router())
 	hr.Map("*", home.Router())
 
+	// Used for testing.
 	r.Mount("/__cplane", cplane.Router())
 	r.Mount("/", hr)
 
-	fmt.Printf("Listening at localhost:%d\n", port)
+	r.Mount("/auth", auth.Router())
 
-	// Start the server
-	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", port), r)
+	// Start the server.
+	address := fmt.Sprintf("%s:%d", config.Config.Http.Host, config.Config.Http.Port)
+	log.Printf("lod2 started; listening at %s", address)
+
+	err := http.ListenAndServe(address, r)
 
 	if err != nil {
 		panic(err)

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{block "title" .}}LOD2.zip{{end}}</title>
+  <title>{{ block "title" . }}LOD2.zip{{ end }}</title>
   <link rel="stylesheet" href="/static/styles/content.css" />
   <link rel="stylesheet" href="/static/styles/global.css" />
   <!-- favicon -->
@@ -13,25 +13,24 @@
 
 <body>
 
-  <header id="header" class="s-elevated">
+  <header id="header">
     <a href="/" class="s-button">LOD2.zip</a>
     <hr class="header__hr" />
-    <!-- <a href="https://x.com/ForestKatsch" class="s-button">@ForestKatsch</a> -->
-    <!-- <a href="/login" class="s-button">Login</a> -->
+    <a href="/auth/login" class="s-button">Login</a>
   </header>
 
-  <main id="content">{{block "content" .}}<h1>204: NO CONTENT{{end}}</h1>
+  <main id="content">{{ block "content" . }}<h1>204: NO CONTENT{{ end }}</h1>
   </main>
 
   <footer id="footer">
-    {{block "footer" .}}
+    {{ block "footer" . }}
     <span class="copyright">
       Copyright 2025 <a href="https://x.com/ForestKatsch">@ForestKatsch</a>
     </span>
     <span class="generated">
       Rendered at <time datetime="{{ .Meta.Now }}">{{ .Meta.Now | formatDate }}</time>
     </span>
-    {{end}}
+    {{ end }}
   </footer>
 
 </body>
