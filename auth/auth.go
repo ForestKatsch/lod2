@@ -16,7 +16,11 @@ func Router() chi.Router {
 	r := chi.NewRouter()
 
 	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		err := page.Render(w, "auth/login.html", nil)
+		// pass down enough to do {{ .Username and .Password }}
+		err := page.Render(w, "auth/login.html", map[string]interface{}{
+			"Username": "",
+			"Password": "",
+		})
 
 		if err != nil {
 			page.RenderError(w, r, err)

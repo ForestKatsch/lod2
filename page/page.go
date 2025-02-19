@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 var templateLibrary *template.Template
@@ -22,11 +24,10 @@ func init() {
 }
 
 func dynamicFuncs() template.FuncMap {
-	return template.FuncMap{
-		"formatDate": func(t time.Time) string {
-			return t.Format("02 Jan 2006 15:04:05 MST")
-		},
-	}
+	// Get Sprig's default functions
+	funcs := sprig.FuncMap()
+
+	return funcs
 }
 
 // Loads a single template from the provided directory and adds it to rootTemplate.

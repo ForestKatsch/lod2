@@ -1,0 +1,38 @@
+.auth-box {
+  max-width: 35rem;
+  margin: 1rem auto;
+  padding-top: 4rem;
+
+  width: 100%;
+
+  .table .line + .line {
+    border-top: 1px solid var(--fg-secondary);
+  }
+
+  .table formset.line {
+    label {
+      border-right: 1px solid var(--fg-secondary);
+      padding: 1rem;
+      max-width: 8rem;
+      flex: 1;
+    }
+
+    input {
+      min-width: 0;
+      flex: 1;
+      padding: 1rem;
+      &:focus {
+        background-color: var(--bg-secondary);
+      }
+    }
+  }
+
+  .h.gap-fill {
+    padding-inline-start: 1rem;
+    button {
+      align-self: flex-end;
+      max-width: 10rem;
+      flex: 1;
+    }
+  }
+}

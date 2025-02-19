@@ -7,16 +7,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// chi v5 router
 func Router() chi.Router {
 	r := chi.NewRouter()
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		err := page.Render(w, "index.html", nil)
+		page.Render(w, "index.html", nil)
+	})
 
-		if err != nil {
-			page.RenderError(w, r, err)
-		}
+	r.Get("/foo", func(w http.ResponseWriter, r *http.Request) {
+		page.Render(w, "index.html", nil)
 	})
 
 	return r

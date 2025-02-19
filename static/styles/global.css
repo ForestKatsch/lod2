@@ -3,10 +3,10 @@
 * {
   margin: 0;
   padding: 0;
+
   box-sizing: border-box;
-  font-family: inherit;
   font-size: 100%;
-  font-weight: inherit;
+  font: inherit;
   text-decoration: none;
   color: inherit;
 
@@ -14,107 +14,211 @@
   border-radius: 0;
   background: none;
   list-style: none;
+
+  outline: none;
+
+  width: unset;
 }
 
 /* MARK: - fonts */
 
 @font-face {
-  font-family: InterVariable;
+  font-family: JetBrainsMono;
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url("../fonts/InterVariable.woff2") format("woff2");
-}
-@font-face {
-  font-family: InterVariable;
-  font-style: italic;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("font-files/InterVariable-Italic.woff2") format("woff2");
+  src: url("../fonts/JetBrainsMono.woff2") format("woff2");
 }
 
 /* variables */
 
 :root {
-  --bg: #000;
-  --fg: #fff;
-
-  --opacity-secondary: 0.5;
-
-  --fg-secondary: rgba(255, 255, 255, var(--opacity-secondary));
-
-  --unit: 8px;
+  --unit: 1rem;
   --grid: calc(var(--unit) * 4);
-  --padding: calc(var(--unit) * 2);
+
+  --bg: hsl(0, 0%, 100%);
+  --bg-secondary: hsl(0, 0%, 93%);
+  --fg: hsl(0, 0%, 0%);
+  --fg-secondary: hsla(0, 0%, 0%, 0.5);
+
+  --shadow-offset: 2px;
+  --shadow-color: hsla(0, 0%, 0%, 1);
+
+  --inset-shadow-offset: 2px;
+  --inset-shadow-blur: 4px;
+  --inset-shadow-color: hsla(0, 0%, 0%, 0.5);
+
+  --padding: 0.5rem 1rem;
+
+  --shadow: 0 calc(var(--shadow-offset) * 2) 0 calc(var(--shadow-offset) * -1)
+    var(--shadow-color);
+
+  --link: hsl(210, 100%, 50%);
 }
 
 /* selection color */
 ::selection {
-  background: var(--fg);
-  color: var(--bg);
 }
 
 html {
-  background-color: var(--bg);
-  color: var(--fg);
-
-  font-family:
-    "Berkeley Mono",
-    "JetBrains Mono",
-    Menlo,
-    Consolas,
-    Monaco,
-    Liberation Mono,
-    Lucida Console,
-    monospace;
-  font-size: 14px;
+  font-family: "Berkeley Mono", "JetBrainsMono", "JetBrains Mono", monospace;
 
   width: 100%;
   min-height: 100vh;
+
+  background: var(--bg);
+  color: var(--fg);
+
+  font-size: 14px;
 }
 
 body {
   min-height: 100vh;
-  max-width: 100ch;
+  width: 100cw;
   margin: 0 auto;
   padding: 1rem;
 
+  max-width: 60rem;
+
   display: flex;
   flex-direction: column;
+  align-items: stretch;
 }
 
-/* global header / footer styles */
+/* box layouts */
+.v,
+.h {
+  display: flex;
+}
+
+.v {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.h {
+  flex-direction: row;
+  align-items: center;
+}
+
+.gap-1 {
+  gap: var(--unit);
+}
+
+.gap-fill {
+  justify-content: space-between;
+}
+
+/* paper */
+.paper {
+  border: 1px solid var(--fg);
+  box-shadow: var(--shadow);
+  background: var(--bg);
+}
+
+/* button */
+
+.button {
+  padding: 0.3rem;
+
+  &:hover {
+    background: var(--fg);
+    color: var(--bg);
+
+    cursor: pointer;
+  }
+
+  &.contrast-high {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  &.contrast-medium {
+    border: 1px solid var(--fg);
+    box-shadow: var(--shadow);
+    background: var(--bg);
+
+    &:hover {
+      background: var(--fg);
+      color: var(--bg);
+    }
+  }
+}
+
+/* link */
+
+.link {
+  text-decoration: underline;
+
+  &.contrast-medium {
+    color: var(--fg-secondary);
+  }
+
+  &:hover {
+    color: var(--fg);
+  }
+}
+
+/* input */
+
+input[type="text"],
+input[type="password"] {
+  padding: 0.5rem;
+}
+
+/*** GLOBALS (header) */
+
 #header {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background-color: var(--bg);
-  color: var(--fg);
+
+  padding: 0.2rem;
+
+  margin-bottom: 2rem;
+
+  position: sticky;
+  top: 1rem;
+
+  hr {
+    flex: 1;
+    height: 0;
+    border-bottom: 1px dashed var(--fg);
+    margin: 0 2rem;
+  }
+
+  .button {
+    padding: 0.8rem;
+  }
 }
+
+/*** GLOBALS (footer) */
 
 #footer {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  background-color: var(--bg);
-  color: var(--fg);
+  flex-direction: row;
+  justify-content: space-between;
+
+  font-size: 80%;
+  color: var(--fg-secondary);
+
+  position: sticky;
+  bottom: 1rem;
 }
 
-/* styles for things that are inverted */
-.button--primary {
-  --fg: #000;
-  --bg: #fff;
+/* single-column */
+@media (max-width: 40rem) {
+  body {
+    padding: 0;
+  }
+
+  #header {
+    border: none;
+    border-bottom: 1px solid var(--fg);
+    top: 0;
+  }
 }
 
-/* styles for buttons and links */
-.button--primary {
-  height: var(--grid);
-  background: var(--bg);
-  color: var(--fg);
-  padding-inline: var(--padding);
-
-  text-transform: uppercase;
-  font-weight: 600;
+#content {
+  flex-grow: 1;
 }

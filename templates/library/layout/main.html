@@ -1,38 +1,43 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ block "title" . }}LOD2.zip{{ end }}</title>
+    <link rel="stylesheet" href="/static/styles/content.css" />
+    <link rel="stylesheet" href="/static/styles/global.css" />
+    <!-- favicon -->
+    <link rel="icon" href="/static/favicon-32x32.png" type="image/png" />
+    <script defer src="/static/scripts/extern/htmx.min.js"></script>
+    {{- block "meta" . }}{{ end }}
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ block "title" . }}LOD2.zip{{ end }}</title>
-  <link rel="stylesheet" href="/static/styles/content.css" />
-  <link rel="stylesheet" href="/static/styles/global.css" />
-  <!-- favicon -->
-  <link rel="icon" href="/static/favicon-32x32.png" type="image/png">
-</head>
+  <body hx-boost="true">
+    <header id="header" class="paper h">
+      <a href="/" class="button">LOD2.zip</a>
+      <hr />
+      <nav class="h">
+        <a href="/auth/login" class="button">Login</a>
+      </nav>
+    </header>
 
-<body>
+    <main id="content" class="v">
+      {{ block "content" . }}<h1>204: NO CONTENT</h1>{{ end }}
+    </main>
 
-  <header id="header">
-    <a href="/" class="s-button">LOD2.zip</a>
-    <hr class="header__hr" />
-    <a href="/auth/login" class="s-button">Login</a>
-  </header>
-
-  <main id="content">{{ block "content" . }}<h1>204: NO CONTENT{{ end }}</h1>
-  </main>
-
-  <footer id="footer">
-    {{ block "footer" . }}
-    <span class="copyright">
-      Copyright 2025 <a href="https://x.com/ForestKatsch">@ForestKatsch</a>
-    </span>
-    <span class="generated">
-      Rendered at <time datetime="{{ .Meta.Now }}">{{ .Meta.Now | formatDate }}</time>
-    </span>
-    {{ end }}
-  </footer>
-
-</body>
-
+    <footer id="footer">
+      {{ block "footer" . }}
+        <span class="copyright">
+          Copyright 2025
+          <a href="https://x.com/ForestKatsch" class="link">@ForestKatsch</a>
+        </span>
+        <span class="generated">
+          Rendered at
+          <time datetime="{{ .Meta.Now }}"
+            >{{ .Meta.Now | date "02 Jan 2006 15:04:05 MST" }}</time
+          >
+        </span>
+      {{ end }}
+    </footer>
+  </body>
 </html>

@@ -13,6 +13,7 @@ import (
 	"lod2/config"
 	"lod2/cplane"
 	"lod2/home"
+	"lod2/page"
 
 	"github.com/go-chi/chi/v5/middleware"
 
@@ -30,6 +31,7 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.StripSlashes)
 
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"https://beta.lod2.zip", "https://cplane.lod2.zip"}, // Use this to allow specific origin hosts
@@ -52,13 +54,14 @@ func main() {
 	hr := hostrouter.New()
 
 	hr.Map("cplane.lod2.zip", cplane.Router())
-	hr.Map("*", home.Router())
 
 	// Used for testing.
 	r.Mount("/__cplane", cplane.Router())
-	r.Mount("/", hr)
+	r.Mount("/", home.Router())
 
 	r.Mount("/auth", auth.Router())
+
+	r.NotFound(page.NotFound)
 
 	// Start the server.
 	address := fmt.Sprintf("%s:%d", config.Config.Http.Host, config.Config.Http.Port)
