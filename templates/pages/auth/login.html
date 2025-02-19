@@ -5,7 +5,14 @@
 {{ end }}
 
 {{ define "content" }}
-  <form method="POST" class="v auth-box gap-1">
+  <form
+    id="login-form"
+    method="POST"
+    class="v auth-box gap-1"
+    hx-select="#login-form"
+  >
+    <input type="hidden" name="nextRedirectUrl" value="{{ .Redirect }}" />
+
     <div class="v paper table">
       <formset class="h line">
         <label for="login-username">Username</label>
@@ -27,6 +34,11 @@
         />
       </formset>
     </div>
+
+    {{ if .Error }}
+      <span class="error">{{ .Error }}</span>
+    {{ end }}
+
 
     <div class="h gap-fill">
       <a href="/auth/register" class="link contrast-medium">Forgot password?</a>

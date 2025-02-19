@@ -54,6 +54,8 @@
     var(--shadow-color);
 
   --link: hsl(210, 100%, 50%);
+
+  --error: hsl(8, 100%, 40%);
 }
 
 /* selection color */
@@ -75,8 +77,8 @@ html {
 }
 
 body {
-  min-height: 100vh;
-  width: 100cw;
+  min-height: 100svh;
+  width: 100svw;
   margin: 0 auto;
   padding: 1rem;
 
@@ -175,7 +177,7 @@ input[type="password"] {
   flex-direction: row;
   justify-content: space-between;
 
-  padding: 0.2rem;
+  padding: 0.5rem;
 
   margin-bottom: 2rem;
 
@@ -187,10 +189,6 @@ input[type="password"] {
     height: 0;
     border-bottom: 1px dashed var(--fg);
     margin: 0 2rem;
-  }
-
-  .button {
-    padding: 0.8rem;
   }
 }
 

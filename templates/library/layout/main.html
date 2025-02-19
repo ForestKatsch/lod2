@@ -10,10 +10,10 @@
     <!-- favicon -->
     <link rel="icon" href="/static/favicon-32x32.png" type="image/png" />
     <script defer src="/static/scripts/extern/htmx.min.js"></script>
+    {{- block "meta" . }}{{ end }}
   </head>
 
-  <body hx-boost="true">
-    {{- block "meta" . }}{{ end }}
+  <body>
     <header id="header" class="paper h">
       <a href="/" class="button">LOD2.zip</a>
       <hr />

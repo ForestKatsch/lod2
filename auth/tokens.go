@@ -103,11 +103,12 @@ func IssueRefreshToken(aud string) (string, error) {
 	return signToken(builder)
 }
 
-// Returns true if the token is valid and issued by us.
+// Returns true if the token is valid and issued by us. Does not validate anything about the token's claims.
 func VerifyToken(signedToken string) bool {
 	token, err := jwt.Parse([]byte(signedToken), jwt.WithKey(jwa.RS256(), pubkey))
+
 	if err != nil {
-		log.Printf("unable to verify JWT: %s", err)
+		log.Printf("unable to verify JWT was signed by us: %s", err)
 		return false
 	}
 
@@ -117,9 +118,10 @@ func VerifyToken(signedToken string) bool {
 			WithIssuer(issuer))
 
 	if err != nil {
-		log.Printf("unable to validate JWT: %s", err)
+		log.Printf("unable to validate JWT or issuer: %s", err)
 		return false
 	}
 
+	// TODO: validate claims?
 	return false
 }
