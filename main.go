@@ -54,10 +54,11 @@ func main() {
 	hr := hostrouter.New()
 
 	hr.Map("cplane.lod2.zip", cplane.Router())
+	hr.Map("*", home.Router())
 
 	// Used for testing.
 	r.Mount("/__cplane", cplane.Router())
-	r.Mount("/", home.Router())
+	r.Mount("/", hr)
 
 	r.Mount("/auth", auth.Router())
 

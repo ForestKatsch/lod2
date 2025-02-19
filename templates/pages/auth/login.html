@@ -8,13 +8,23 @@
   <form method="POST" class="v auth-box gap-1">
     <div class="v paper table">
       <formset class="h line">
-        <label for="username">Username</label>
-        <input name="username" type="text" value="{{ .Username }}" />
+        <label for="login-username">Username</label>
+        <input
+          id="login-username"
+          name="username"
+          type="text"
+          value="{{ .Username }}"
+        />
       </formset>
 
       <formset class="h line">
-        <label for="password">Password</label>
-        <input name="password" type="password" value="{{ .Password }}" />
+        <label for="login-password">Password</label>
+        <input
+          id="login-password"
+          name="password"
+          type="password"
+          value="{{ .Password }}"
+        />
       </formset>
     </div>
 

@@ -4,15 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ block "title" . }}LOD2.zip{{ end }}</title>
-    <link rel="stylesheet" href="/static/styles/content.css" />
-    <link rel="stylesheet" href="/static/styles/global.css" />
+    {{ $n := .Meta.Now | unixEpoch }}
+    <link rel="stylesheet" href="/static/styles/content.css?ts={{ $n }}" />
+    <link rel="stylesheet" href="/static/styles/global.css?ts={{ $n }}" />
     <!-- favicon -->
     <link rel="icon" href="/static/favicon-32x32.png" type="image/png" />
     <script defer src="/static/scripts/extern/htmx.min.js"></script>
-    {{- block "meta" . }}{{ end }}
   </head>
 
   <body hx-boost="true">
+    {{- block "meta" . }}{{ end }}
     <header id="header" class="paper h">
       <a href="/" class="button">LOD2.zip</a>
       <hr />
