@@ -1,7 +1,6 @@
 package webhook
 
 import (
-	"fmt"
 	"lod2/cplane/redeploy"
 	"log"
 	"net/http"
@@ -48,7 +47,7 @@ func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 		if ref == "refs/heads/main" {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("Webhook received, redeploying"))
-			fmt.Println("Redeploying...")
+			log.Println("Redeploying...")
 			redeploy.Redeploy()
 			return
 		}

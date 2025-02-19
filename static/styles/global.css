@@ -37,7 +37,7 @@
   --grid: calc(var(--unit) * 4);
 
   --bg: hsl(0, 0%, 100%);
-  --bg-secondary: hsl(0, 0%, 93%);
+  --bg-secondary: hsl(0, 0%, 95%);
   --fg: hsl(0, 0%, 0%);
   --fg-secondary: hsla(0, 0%, 0%, 0.5);
 
@@ -58,6 +58,8 @@
 
 /* selection color */
 ::selection {
+  background: var(--fg);
+  color: var(--bg);
 }
 
 html {

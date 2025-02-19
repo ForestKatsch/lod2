@@ -5,28 +5,24 @@
 {{ end }}
 
 {{ define "content" }}
-  <div class="h">
-    <form method="POST" class="v auth-box gap-1">
-      <div class="v paper table">
-        <formset class="h line">
-          <label for="username">Username</label>
-          <input name="username" type="text" value="{{ .Username }}" />
-        </formset>
+  <form method="POST" class="v auth-box gap-1">
+    <div class="v paper table">
+      <formset class="h line">
+        <label for="username">Username</label>
+        <input name="username" type="text" value="{{ .Username }}" />
+      </formset>
 
-        <formset class="h line">
-          <label for="password">Password</label>
-          <input name="password" type="password" value="{{ .Password }}" />
-        </formset>
-      </div>
+      <formset class="h line">
+        <label for="password">Password</label>
+        <input name="password" type="password" value="{{ .Password }}" />
+      </formset>
+    </div>
 
-      <div class="h gap-fill">
-        <a href="/auth/register" class="link contrast-medium"
-          >Forgot password?</a
-        >
-        <button class="button contrast-medium">Login</button>
-      </div>
-    </form>
-  </div>
+    <div class="h gap-fill">
+      <a href="/auth/register" class="link contrast-medium">Forgot password?</a>
+      <button class="button contrast-medium">Login</button>
+    </div>
+  </form>
 {{ end }}
 
 {{ template "layout/main.html" . }}

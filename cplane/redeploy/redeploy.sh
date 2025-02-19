@@ -7,12 +7,12 @@ function main {
   REPO_DIR="$SCRIPT_DIR/../.."
   BINARY_PATH="${REPO_DIR}/lod2"
 
-  ARCHIVE_PATH="$REPO_DIR/_archive_bin/$(git rev-parse HEAD)"
-
   #
   echo "1. Starting update process..."
 
   cd "$REPO_DIR"
+
+  ARCHIVE_PATH="$REPO_DIR/_archive_bin/$(git rev-parse HEAD)"
 
   #
   echo "2. Pulling latest changes from Git..."

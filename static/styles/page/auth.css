@@ -21,8 +21,9 @@
       min-width: 0;
       flex: 1;
       padding: 1rem;
+
       &:focus {
-        background-color: var(--bg-secondary);
+        background-color: hsla(40, 100%, 90%, 1);
       }
     }
   }
