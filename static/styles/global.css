@@ -18,6 +18,7 @@
   outline: none;
 
   width: unset;
+  border-collapse: separate;
 }
 
 /* MARK: - fonts */
@@ -203,7 +204,8 @@ input[type="password"] {
   color: var(--fg-secondary);
 
   position: sticky;
-  bottom: 1rem;
+
+  padding: 1rem;
 }
 
 /* single-column */
@@ -213,8 +215,9 @@ input[type="password"] {
   }
 
   #header {
-    border: none;
-    border-bottom: 1px solid var(--fg);
+    border-inline-start-width: 0;
+    border-inline-end-width: 0;
+    border-block-start-width: 0;
     top: 0;
   }
 }

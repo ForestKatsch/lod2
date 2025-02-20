@@ -25,7 +25,7 @@ func Router() chi.Router {
 			nextUrl = r.Referer()
 		}
 
-		page.Render(w, "auth/login.html", map[string]interface{}{
+		page.Render(w, r, "auth/login.html", map[string]interface{}{
 			"Username": "",
 			"Password": "",
 			"Redirect": nextUrl,
@@ -61,7 +61,7 @@ func Router() chi.Router {
 		}
 
 		w.WriteHeader(http.StatusUnauthorized)
-		page.Render(w, "auth/login.html", map[string]interface{}{
+		page.Render(w, r, "auth/login.html", map[string]interface{}{
 			"Username": username,
 			"Password": password,
 			"Error":    error,

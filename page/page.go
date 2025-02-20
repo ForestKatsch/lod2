@@ -102,7 +102,7 @@ func loadPage(path string) (*template.Template, error) {
 }
 
 // renders a single template
-func Render(w http.ResponseWriter, path string, data map[string]interface{}) error {
+func Render(w http.ResponseWriter, r *http.Request, path string, data map[string]interface{}) error {
 	templ, err := loadPage(path)
 
 	// Create page data and add some last-second metadata.

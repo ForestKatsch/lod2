@@ -12,5 +12,5 @@ func RenderError(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 func NotFound(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Custom 404 Page", http.StatusNotFound)
+	Render(w, r, "/_error/404.html", nil)
 }

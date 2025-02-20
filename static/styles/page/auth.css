@@ -9,17 +9,25 @@
     border-top: 1px solid var(--fg-secondary);
   }
 
-  .table formset.line {
+  table {
+    border-spacing: 0;
+
+    td + td {
+      border-left: 1px solid var(--fg-secondary);
+    }
+
+    tr + tr td {
+      border-top: 1px solid var(--fg-secondary);
+    }
+
     label {
-      border-right: 1px solid var(--fg-secondary);
       padding: 1rem;
-      max-width: 8rem;
-      flex: 1;
+      min-width: 8rem;
     }
 
     input {
       min-width: 0;
-      flex: 1;
+      width: 100%;
       padding: 1rem;
 
       &:focus {
@@ -42,5 +50,13 @@
       max-width: 10rem;
       flex: 1;
     }
+  }
+}
+
+/* single-column */
+@media (max-width: 35rem) {
+  .auth-box table {
+    border-inline-start-width: 0;
+    border-inline-end-width: 0;
   }
 }
