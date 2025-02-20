@@ -3,6 +3,7 @@ package auth
 import (
 	"lod2/page"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -39,33 +40,39 @@ func Router() chi.Router {
 		password := r.Form.Get("password")
 		next := r.Form.Get("nextRedirectUrl")
 
-		var error = ""
+		var errorMessage = ""
 
-		if username != "admin" {
-			error = "Invalid username or password"
+		refreshToken, err := issueRefreshToken(username, password)
+
+		if err != nil {
+			errorMessage = err.Error()
 		}
 
-		// todo: actual auth
-		if error == "" {
-			if next == "" {
-				next = "/"
-			}
+		if errorMessage != "" {
+			w.WriteHeader(http.StatusUnauthorized)
 
-			http.SetCookie(w, &http.Cookie{
-				Name:     "lod2.refresh",
-				Value:    "empty cookie",
-				HttpOnly: true,
-			})
-			http.Redirect(w, r, next, http.StatusSeeOther)
-			return
+			page.Render(w, r, "auth/login.html", map[string]interface{}{
+				"Username": username,
+				"Password": password,
+				"Error":    errorMessage})
 		}
 
-		w.WriteHeader(http.StatusUnauthorized)
-		page.Render(w, r, "auth/login.html", map[string]interface{}{
-			"Username": username,
-			"Password": password,
-			"Error":    error,
+		if next == "" {
+			next = "/"
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     refreshTokenCookieName,
+			Value:    refreshToken,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteStrictMode,
+			Expires:  time.Now().Add(refreshTokenExpirationDuration),
 		})
+
+		http.Redirect(w, r, next, http.StatusSeeOther)
+		return
 	})
 
 	return r

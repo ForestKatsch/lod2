@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -16,9 +17,6 @@ import (
 // Responsible for managing tokens used for user authentication.
 // Primarily, this includes the private/public key pair used to sign and verify JWTs.
 // The private key is loaded from disk and used to sign JWTs, while the public key is derived from the private key and used to verify JWTs.
-
-// The `iss` field of our JWTs.
-const issuer = "https://lod2.zip"
 
 // The global private key used to sign JWTs.
 var privkey jwk.Key
@@ -94,11 +92,17 @@ func signToken(builder *jwt.Builder) (string, error) {
 	return string(signed), nil
 }
 
-func IssueRefreshToken(aud string) (string, error) {
-	// TODO: move expiration time to config or something?
-	var refreshTokenExpirationDuration = time.Hour * 6 * 30 * 24
+func issueRefreshToken(username string, password string) (string, error) {
+	if username != "admin" {
+		return "", errors.New("Invalid username")
+	}
+
+	if password != "admin" {
+		return "", errors.New("Wrong password")
+	}
 
 	builder := getTokenBuilder(time.Now().Add(refreshTokenExpirationDuration))
+	//builder.Audience(audience)
 
 	return signToken(builder)
 }

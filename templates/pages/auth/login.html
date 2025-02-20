@@ -9,7 +9,8 @@
     id="login-form"
     method="POST"
     class="v auth-box gap-1"
-    hx-select="#login-form"
+    hx-boost="true"
+    hx-disabled-elt="find button._login, input"
   >
     <input type="hidden" name="nextRedirectUrl" value="{{ .Redirect }}" />
 
@@ -52,7 +53,7 @@
 
     <div class="h gap-fill">
       <a href="/auth/register" class="link contrast-medium">Forgot password?</a>
-      <button class="button contrast-medium">Login</button>
+      <button class="_login button contrast-medium">Login</button>
     </div>
   </form>
 {{ end }}

@@ -1,38 +1,15 @@
 .auth-box {
-  max-width: 35rem;
+  max-width: 36rem;
   margin: 1rem auto;
+  padding: 1rem;
   padding-top: 4rem;
 
   width: 100%;
 
-  .table .line + .line {
-    border-top: 1px solid var(--fg-secondary);
-  }
-
   table {
-    border-spacing: 0;
-
-    td + td {
-      border-left: 1px solid var(--fg-secondary);
-    }
-
-    tr + tr td {
-      border-top: 1px solid var(--fg-secondary);
-    }
-
-    label {
-      padding: 1rem;
-      min-width: 8rem;
-    }
-
+    label,
     input {
-      min-width: 0;
-      width: 100%;
       padding: 1rem;
-
-      &:focus {
-        background-color: hsla(40, 100%, 90%, 1);
-      }
     }
   }
 
@@ -54,9 +31,17 @@
 }
 
 /* single-column */
-@media (max-width: 35rem) {
-  .auth-box table {
-    border-inline-start-width: 0;
-    border-inline-end-width: 0;
+@media (max-width: 30rem) {
+  .auth-box {
+    padding: 0;
+    padding-top: 2rem;
+    table {
+      border-inline-start-width: 0;
+      border-inline-end-width: 0;
+    }
+
+    .h.gap-fill {
+      padding-inline-end: 1rem;
+    }
   }
 }
