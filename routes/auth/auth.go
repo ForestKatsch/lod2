@@ -11,21 +11,26 @@ import (
 
 const nextParam = "next"
 
+func getNextUrl(r *http.Request, defaultUrl string) string {
+	nextUrl := r.URL.Query().Get(nextParam)
+
+	if nextUrl == "" {
+		nextUrl = r.Referer()
+	}
+
+	if nextUrl == "" {
+		nextUrl = defaultUrl
+	}
+
+	return nextUrl
+}
+
 // chi v5 router
 func Router() chi.Router {
 	r := chi.NewRouter()
 
 	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		// the next url to go to
-		nextUrl := r.URL.Query().Get(nextParam)
-
-		if nextUrl == "" {
-			nextUrl = r.Referer()
-		}
-
-		if nextUrl == "" {
-			nextUrl = "/"
-		}
+		nextUrl := getNextUrl(r, "/account")
 
 		// check if the user is already logged in
 		if auth.IsUserLoggedIn(r.Context()) {
@@ -42,16 +47,7 @@ func Router() chi.Router {
 	})
 
 	r.Get("/logout", func(w http.ResponseWriter, r *http.Request) {
-		// the next url to go to
-		nextUrl := r.URL.Query().Get(nextParam)
-
-		if nextUrl == "" {
-			nextUrl = r.Referer()
-		}
-
-		if nextUrl == "" || nextUrl == "/auth/login" {
-			nextUrl = "/"
-		}
+		nextUrl := getNextUrl(r, "/")
 
 		// check if the user is already logged in
 		if auth.IsUserLoggedIn(r.Context()) {
@@ -68,7 +64,7 @@ func Router() chi.Router {
 
 		username := r.Form.Get("username")
 		password := r.Form.Get("password")
-		next := r.Form.Get("nextRedirectUrl")
+		next := r.Form.Get("Redirect")
 
 		var errorMessage = ""
 

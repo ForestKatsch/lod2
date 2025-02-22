@@ -10,6 +10,7 @@ import (
 
 func Router() chi.Router {
 	r := chi.NewRouter()
+	r.NotFound(page.NotFound)
 
 	r.Mount("/auth", authRoutes.Router())
 

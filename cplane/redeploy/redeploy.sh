@@ -19,11 +19,11 @@ function main {
 
   if ! git diff-index --quiet HEAD --; then
     echo "hey"
-    #echo "! Git repository '${REPO_DIR}' is not clean. Please commit or stash your changes."
-    #exit 1
+    echo "! Git repository '${REPO_DIR}' is not clean. Please commit or stash your changes."
+    exit 1
   fi
 
-  #git pull origin main || echo "Offline or an error occurred. Skipping 'git pull'."
+  git pull origin main || echo "Offline or an error occurred. Skipping 'git pull'."
 
   #
   echo "3. Rebuilding the binary..."
