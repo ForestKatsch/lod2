@@ -108,6 +108,7 @@ body {
 .v {
   flex-direction: column;
   align-items: stretch;
+  max-width: 100%;
 }
 
 .h {

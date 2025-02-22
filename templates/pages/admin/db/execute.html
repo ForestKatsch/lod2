@@ -3,22 +3,24 @@
 {{ else if not .Rows }}
   <div class="alert info">no rows returned</div>
 {{ else }}
-  <table class="paper data">
-    <thead>
-      <tr>
-        {{ range $index, $column := .Columns }}
-          <th>{{ $column }}</th>
-        {{ end }}
-      </tr>
-    </thead>
-    <tbody>
-      {{ range $index, $row := .Rows }}
+  <div class="v paper _table_container">
+    <table class="data">
+      <thead>
         <tr>
-          {{ range $index, $value := $row }}
-            <td>{{ $value }}</td>
+          {{ range $index, $column := .Columns }}
+            <th>{{ $column }}</th>
           {{ end }}
         </tr>
-      {{ end }}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {{ range $index, $row := .Rows }}
+          <tr>
+            {{ range $value := $row }}
+              <td>{{ $value }}</td>
+            {{ end }}
+          </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </div>
 {{ end }}

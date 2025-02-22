@@ -14,6 +14,8 @@ func Router() chi.Router {
 	r := chi.NewRouter()
 	r.Use(lod2Middleware.AuthRequiredMiddleware())
 
+	r.Mount("/users", userRouter())
+
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		page.Render(w, r, "admin/index.html", map[string]interface{}{})
 	})
@@ -66,9 +68,12 @@ func Router() chi.Router {
 				return
 			}
 
-			for i, colName := range columns {
-				val := *(columnPointers[i].(*interface{}))
-				columnMap[colName] = val
+			for i, _ := range columns {
+				if val, ok := (*(columnPointers[i].(*interface{}))).(interface{ Valid() bool }); ok && !val.Valid() {
+					columnMap[string(i)] = ""
+				} else {
+					columnMap[string(i)] = *(columnPointers[i].(*interface{}))
+				}
 			}
 			data["Rows"] = append(data["Rows"].([]map[string]interface{}), columnMap)
 		}

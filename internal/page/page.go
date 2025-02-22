@@ -126,7 +126,6 @@ func Render(w http.ResponseWriter, r *http.Request, path string, data map[string
 	meta := MetaData{
 		Referrer: r.Referer(),
 		Now:      time.Now(),
-		Status:   w.Header()["Status"],
 	}
 
 	if auth.IsUserLoggedIn(r.Context()) {
