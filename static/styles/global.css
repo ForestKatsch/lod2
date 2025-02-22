@@ -323,6 +323,25 @@ table {
   padding: 1rem;
 }
 
+/*** GLOBALS (env-banner) */
+
+#env-banner {
+  position: fixed;
+  top: 3rem;
+  right: -12rem;
+  width: 30rem;
+
+  text-align: center;
+
+  transform: translateY(-50%) rotate(45deg);
+  padding: 0.2rem 0;
+  background-color: var(--error);
+  color: var(--bg);
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 1000;
+}
+
 /* single-column */
 @media (max-width: 40rem) {
   body {

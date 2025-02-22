@@ -18,6 +18,12 @@
   </head>
 
   <body>
+    <div id="env-banner">LOCAL</div>
+    <script>
+      if (location.hostname != "localhost") {
+        document.getElementById("env-banner").remove();
+      }
+    </script>
     <header id="header" class="paper h">
       <a href="/" class="button">LOD2.zip</a>
       <hr />
