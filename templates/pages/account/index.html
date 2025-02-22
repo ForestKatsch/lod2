@@ -1,9 +1,13 @@
 {{ define "title" }}LOD2.zip - {{ .Meta.User.Name }}{{ end }}
 
 {{ define "content" }}
-  <section class="v align-start gap-01">
-    <h1>hello, {{ .Meta.User.Name }}</h1>
-    <a class="button contrast-medium" href="/auth/logout">Logout</a>
+  <section class="v gap-01">
+    <header class="h gap-fill">
+      <h1>hello, {{ .Meta.User.Name }}</h1>
+      <a class="button contrast-medium" href="/auth/logout">Logout</a>
+    </header>
+    <hr />
+    Hello, {{ .Meta.User.Name }}! You are logged in.
   </section>
 {{ end }}
 

@@ -1,0 +1,25 @@
+{{ define "title" }}LOD2.zip - Logout confirmation{{ end }}
+
+{{ define "meta" }}
+  <link rel="stylesheet" href="/static/styles/page/auth.css" />
+{{ end }}
+
+{{ define "content" }}
+  <div class="auth-box v gap-1 paper padding-1">
+    <h1>Logout</h1>
+    <div class="alert">Do you <em>really</em> want to leave?</div>
+    <div class="h gap-fill">
+      <a
+        href="{{ .Meta.Referrer }}"
+        hx-on::click="history.back()"
+        class="link contrast-medium"
+        >Go back</a
+      >
+      <a href="/auth/logout/confirm" class="button contrast-medium"
+        >Yes, logout</a
+      >
+    </div>
+  </div>
+{{ end }}
+
+{{ template "layout/main.html" . }}

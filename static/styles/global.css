@@ -52,8 +52,8 @@
 
   --padding: 0.5rem 1rem;
 
-  --shadow: 0 calc(var(--shadow-offset) * 2) 0 calc(var(--shadow-offset) * -1)
-    var(--shadow-color);
+  --shadow: 0 calc(var(--shadow-offset) * 2 + 1px) 0
+    calc(var(--shadow-offset) * -1) var(--shadow-color);
 
   --link: hsl(210, 100%, 50%);
 
@@ -109,6 +109,10 @@ body {
   row-gap: 0.5rem;
 }
 
+.padding-1 {
+  padding: 1rem;
+}
+
 .gap-01 {
   gap: calc(var(--unit) * 0.5);
 }
@@ -135,7 +139,7 @@ body {
 
 /* paper */
 .paper {
-  border: 1px solid var(--fg);
+  outline: 1px solid var(--fg);
   box-shadow: var(--shadow);
   background: var(--bg);
 }
@@ -158,7 +162,7 @@ body {
   }
 
   &.contrast-medium {
-    border: 1px solid var(--fg);
+    outline: 1px solid var(--fg);
     box-shadow: var(--shadow);
     background: var(--bg);
 
@@ -224,35 +228,21 @@ table {
 
 /* */
 .alert {
-  --border-size: 0.6rem;
-  margin: var(--border-size);
-
-  padding: 0.4rem;
+  padding: calc(1rem - 8px);
   position: relative;
-  background: var(--page);
   color: var(--error);
+  font-weight: bold;
 
-  &::before {
-    top: calc(var(--border-size) * -1);
-    left: calc(var(--border-size) * -1);
-    right: calc(var(--border-size) * -1);
-    bottom: calc(var(--border-size) * -1);
-
-    content: "";
-    position: absolute;
-    z-index: -1;
-
-    background-image: repeating-linear-gradient(
+  border: 8px solid transparent;
+  border-image: repeating-linear-gradient(
       135deg,
-      var(--page),
-      var(--page) 5px,
-      var(--error) 5px,
-      var(--error) 10px,
-      var(--page) 10px
-    );
-  }
+      var(--error) 0,
+      var(--error) 4px,
+      transparent 4px,
+      transparent 8px
+    )
+    8 round;
 }
-
 /*** GLOBALS (header) */
 
 #header {
@@ -314,7 +304,7 @@ table {
 
 @media (max-width: 20rem) {
   #content {
-    padding: 0;
+    padding: 0 0.5rem;
   }
 }
 

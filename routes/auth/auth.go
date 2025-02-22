@@ -89,14 +89,19 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetLogout(w http.ResponseWriter, r *http.Request) {
-	// check if the user is already logged in
+	if !auth.IsUserLoggedIn(r.Context()) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+
+	page.Render(w, r, "auth/logout.html", nil)
+}
+
+func GetLogoutConfirm(w http.ResponseWriter, r *http.Request) {
 	if auth.IsUserLoggedIn(r.Context()) {
-		log.Println("signing out user (is logged in)")
 		auth.SignOut(w, r)
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-	return
 }
 
 // chi v5 router
@@ -107,6 +112,7 @@ func Router() chi.Router {
 	r.Post("/login", PostLogin)
 
 	r.Get("/logout", GetLogout)
+	r.Get("/logout/confirm", GetLogoutConfirm)
 
 	return r
 }

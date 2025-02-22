@@ -24,7 +24,9 @@
       <hr />
       <nav class="h">
         {{ if .Meta.User }}
-          <a href="/account" class="button">{{ .Meta.User.Name }}</a>
+          <a href="/account" class="button" title="{{ .Meta.User.Name }}"
+            >Account</a
+          >
         {{ else }}
           <a href="/auth/login" class="button">Login</a>
         {{ end }}

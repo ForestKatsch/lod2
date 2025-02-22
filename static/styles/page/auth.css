@@ -16,8 +16,6 @@
 
     button {
       align-self: flex-end;
-      max-width: 10rem;
-      flex: 1;
       margin-inline-start: auto;
     }
   }
@@ -27,11 +25,6 @@
 @media (max-width: 20rem) {
   .auth-box {
     padding: 0;
-
-    table {
-      border-inline-start-width: 0;
-      border-inline-end-width: 0;
-    }
 
     .h.gap-fill {
       padding-inline-end: 1rem;

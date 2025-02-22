@@ -103,8 +103,9 @@ func loadPage(path string) (*template.Template, error) {
 }
 
 type MetaData struct {
-	Now  time.Time
-	User *UserData
+	Referrer string
+	Now      time.Time
+	User     *UserData
 }
 
 type UserData struct {
@@ -122,7 +123,8 @@ func Render(w http.ResponseWriter, r *http.Request, path string, data map[string
 	}
 
 	meta := MetaData{
-		Now: time.Now(),
+		Referrer: r.Referer(),
+		Now:      time.Now(),
 	}
 
 	if auth.IsUserLoggedIn(r.Context()) {

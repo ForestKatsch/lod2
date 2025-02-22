@@ -19,14 +19,18 @@ func validateAuth(w http.ResponseWriter, r *http.Request) context.Context {
 		return r.Context()
 	}
 
-	if refreshErr != nil || accessErr != nil {
-		auth.SignOut(w, r)
+	if refreshTokenCookie == nil || refreshTokenCookie.Value == "" {
 		return r.Context()
 	}
 
-	refreshToken, _ := auth.ParseToken(refreshTokenCookie.Value)
+	accessTokenString := ""
 
-	accessToken, accessErr := auth.ParseToken(accessTokenCookie.Value)
+	if accessTokenCookie != nil {
+		accessTokenString = accessTokenCookie.Value
+	}
+
+	refreshToken, _ := auth.ParseToken(refreshTokenCookie.Value)
+	accessToken, accessErr := auth.ParseToken(accessTokenString)
 
 	// at this point, an expired access token is not a problem and means we need to refresh it
 	if accessErr != nil {
