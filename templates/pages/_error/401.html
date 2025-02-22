@@ -1,0 +1,16 @@
+{{ define "content" }}
+  <h1>401: NOT AUTHORIZED</h1>
+  <a class="button contrast-medium" href="/auth/login">Login</a>
+{{ end }}
+
+{{ define "meta" }}
+  <style>
+    #content {
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+  </style>
+{{ end }}
+
+{{ template "layout/main.html" . }}

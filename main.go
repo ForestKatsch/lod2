@@ -12,6 +12,8 @@ import (
 	"lod2/config"
 	"lod2/cplane"
 	"lod2/internal/auth"
+	lod2Middleware "lod2/internal/middleware"
+	"lod2/internal/page"
 	"lod2/routes"
 
 	"github.com/go-chi/chi/v5/middleware"
@@ -46,7 +48,7 @@ func main() {
 	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	r.Use(auth.AuthMiddleware())
+	r.Use(lod2Middleware.AuthRefreshMiddleware())
 
 	// Set up a static route
 	fs := http.FileServer(http.Dir("static"))
@@ -60,6 +62,8 @@ func main() {
 	// Used for testing.
 	r.Mount("/__cplane", cplane.Router())
 	r.Mount("/", hr)
+
+	r.NotFound(page.NotFound)
 
 	// Start the server.
 	address := fmt.Sprintf("%s:%d", config.Config.Http.Host, config.Config.Http.Port)
