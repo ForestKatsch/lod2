@@ -13,7 +13,7 @@ func IssueRefreshToken(username string, password string) (string, error) {
 	}
 
 	if password != "admin" {
-		return "", errors.New("Wrong password")
+		return "", errors.New("Invalid password")
 	}
 
 	builder := getTokenBuilder(time.Now().Add(RefreshTokenExpirationDuration))

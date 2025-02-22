@@ -11,13 +11,6 @@
     }
   }
 
-  .error {
-    background: var(--error);
-    color: white;
-
-    padding: 0.5rem;
-  }
-
   .h.gap-fill {
     padding-inline-start: 1rem;
 

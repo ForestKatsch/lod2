@@ -222,6 +222,37 @@ table {
   }
 }
 
+/* */
+.alert {
+  --border-size: 0.6rem;
+  margin: var(--border-size);
+
+  padding: 0.4rem;
+  position: relative;
+  background: var(--page);
+  color: var(--error);
+
+  &::before {
+    top: calc(var(--border-size) * -1);
+    left: calc(var(--border-size) * -1);
+    right: calc(var(--border-size) * -1);
+    bottom: calc(var(--border-size) * -1);
+
+    content: "";
+    position: absolute;
+    z-index: -1;
+
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--page),
+      var(--page) 5px,
+      var(--error) 5px,
+      var(--error) 10px,
+      var(--page) 10px
+    );
+  }
+}
+
 /*** GLOBALS (header) */
 
 #header {
