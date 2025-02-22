@@ -1,4 +1,4 @@
-{{ define "title" }}LOD2.zip - {{ .Meta.User.Name }}{{ end }}
+{{ define "title" }}My account{{ end }}
 
 {{ define "content" }}
   <section class="v gap-01">
@@ -8,6 +8,7 @@
     </header>
     <hr />
     Hello, {{ .Meta.User.Name }}! You are logged in.
+    <a class="link" href="/admin/">Administrator settings</a>
   </section>
 {{ end }}
 

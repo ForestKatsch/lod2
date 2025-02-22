@@ -19,6 +19,8 @@
 
   width: unset;
   border-collapse: separate;
+
+  text-align: inherit;
 }
 
 /* MARK: - fonts */
@@ -41,6 +43,7 @@
 
   --bg: hsl(0, 0%, 100%);
   --fg: hsl(0, 0%, 0%);
+  --bg-secondary: hsl(0, 0%, 95%);
   --fg-secondary: hsla(0, 0%, 0%, 0.5);
 
   --shadow-offset: 2px;
@@ -58,6 +61,8 @@
   --link: hsl(210, 100%, 50%);
 
   --error: hsl(8, 100%, 40%);
+
+  --focus: hsla(40, 100%, 90%, 1);
 }
 
 /* selection color */
@@ -196,13 +201,19 @@ body {
 /* input */
 
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+textarea {
   min-width: 0;
   padding: 0.5rem;
 
   &:focus {
-    background-color: hsla(40, 100%, 90%, 1);
+    background-color: var(--focus);
   }
+}
+
+textarea {
+  resize: vertical;
+  min-height: 4rem;
 }
 
 /* table */
@@ -210,7 +221,16 @@ input[type="password"] {
 table {
   border-spacing: 0;
 
-  td + td {
+  thead {
+    background-color: var(--bg-secondary);
+
+    th {
+      border-bottom: 1px solid var(--fg-secondary);
+    }
+  }
+
+  td + td,
+  th + th {
     border-left: 1px solid var(--fg-secondary);
   }
 
@@ -225,6 +245,18 @@ table {
 
   input {
     width: 100%;
+  }
+
+  &.data {
+    tbody {
+      tr:nth-child(even) {
+        background-color: var(--bg-secondary);
+      }
+
+      tr:hover {
+        background-color: var(--focus);
+      }
+    }
   }
 }
 
@@ -244,6 +276,10 @@ table {
       transparent 8px
     )
     8 round;
+
+  &.info {
+    --error: var(--fg-secondary);
+  }
 }
 /*** GLOBALS (header) */
 

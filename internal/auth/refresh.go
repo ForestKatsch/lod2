@@ -17,7 +17,7 @@ func IssueRefreshToken(username string, password string) (string, error) {
 	}
 
 	builder := getTokenBuilder(time.Now().Add(RefreshTokenExpirationDuration))
-	builder.Audience([]string{audience})
+	builder.Audience([]string{"refresh"})
 	builder.Subject(username)
 
 	signed, err := signToken(builder)

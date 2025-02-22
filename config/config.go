@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"lod2/internal/utils"
 )
 
 var Config struct {
@@ -23,6 +24,9 @@ func Init() {
 
 	flag.StringVar(&Config.ConfigPath, "config", "~/.config/lod2/", "path to configuration directory")
 	flag.StringVar(&Config.DataPath, "data", "~/.local/share/lod2/", "path to data directory")
+
+	Config.ConfigPath = utils.ExpandHomePath(Config.ConfigPath)
+	Config.DataPath = utils.ExpandHomePath(Config.DataPath)
 
 	flag.Parse()
 }

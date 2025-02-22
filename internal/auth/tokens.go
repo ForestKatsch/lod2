@@ -68,7 +68,7 @@ func loadPrivateKey(privkeyFilename string) (jwk.Key, error) {
 // Issue a new token with the provided audience and expiration time.
 func getTokenBuilder(exp time.Time) *jwt.Builder {
 	return jwt.NewBuilder().
-		Issuer(issuer).
+		Issuer(tokenIssuer).
 		IssuedAt(time.Now()).
 		Expiration(exp)
 }
@@ -103,7 +103,7 @@ func _verifyTokenIsValid(signedToken string) (jwt.Token, error) {
 	err = jwt.Validate(
 		token,
 		jwt.
-			WithIssuer(issuer))
+			WithIssuer(tokenIssuer))
 
 	if err != nil {
 		log.Printf("unable to validate JWT or issuer: %s", err)

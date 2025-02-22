@@ -12,6 +12,7 @@ import (
 	"lod2/config"
 	"lod2/cplane"
 	"lod2/internal/auth"
+	"lod2/internal/db"
 	lod2Middleware "lod2/internal/middleware"
 	"lod2/internal/page"
 	"lod2/routes"
@@ -24,6 +25,7 @@ import (
 func main() {
 	config.Init()
 	auth.Init()
+	db.Init()
 
 	// The primary router.
 	r := chi.NewRouter()

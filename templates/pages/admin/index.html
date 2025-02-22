@@ -1,0 +1,51 @@
+{{ define "title" }}Admin{{ end }}
+
+{{ define "meta" }}
+  <style>
+    #results {
+      td,
+      th {
+        padding: 0.5rem 1rem;
+      }
+    }
+  </style>
+{{ end }}
+
+{{ define "content" }}
+  <section class="v gap-1">
+    <header class="h">
+      <h1>Administrator settings</h1>
+    </header>
+    <a href="users" class="link">User management</a>
+    <hr />
+    <form class="v gap-01" hx-post="/admin/db/execute" hx-target="#results">
+      <textarea
+        name="query"
+        class="paper"
+        placeholder="SELECT * FROM table"
+      ></textarea>
+      <button class="contrast-medium button">Execute</button>
+    </form>
+    <section id="results" class="v">
+      <table class="paper data">
+        <tbody>
+          <tr>
+            <td>
+              <label for="login-username">Username</label>
+            </td>
+            <td>
+              <input
+                id="login-username"
+                name="username"
+                type="text"
+                value="{{ .Username }}"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </section>
+{{ end }}
+
+{{ template "layout/main.html" . }}

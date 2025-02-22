@@ -16,7 +16,15 @@ func IssueAccessToken(refreshToken jwt.Token) (string, error) {
 		return "", errors.New("unable to extract subject from refresh token")
 	}
 
+	audience, exists := refreshToken.Audience()
+
+	if !exists || audience[0] != "refresh" {
+		return "", errors.New("unable to extract audience from refresh token")
+	}
+
 	builder.Subject(subject)
+	builder.Audience([]string{accessTokenAudience})
+	builder.Claim("type", "refresh")
 
 	signed, err := signToken(builder)
 
