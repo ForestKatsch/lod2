@@ -5,13 +5,7 @@
 {{ end }}
 
 {{ define "content" }}
-  <form
-    id="login-form"
-    method="POST"
-    class="v auth-box gap-1"
-    hx-boost="true"
-    hx-disabled-elt="find button._login, input"
-  >
+  <form id="login-form" method="POST" class="v auth-box gap-1">
     <input type="hidden" name="nextRedirectUrl" value="{{ .Redirect }}" />
 
     <table class="paper">

@@ -9,11 +9,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 
-	"lod2/auth"
 	"lod2/config"
 	"lod2/cplane"
-	"lod2/home"
-	"lod2/page"
+	"lod2/internal/auth"
+	"lod2/internal/page"
+	"lod2/routes"
 
 	"github.com/go-chi/chi/v5/middleware"
 
@@ -47,6 +47,8 @@ func main() {
 	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
 
+	r.Use(auth.AuthMiddleware())
+
 	// Set up a static route
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
@@ -54,13 +56,11 @@ func main() {
 	hr := hostrouter.New()
 
 	hr.Map("cplane.lod2.zip", cplane.Router())
-	hr.Map("*", home.Router())
+	hr.Map("*", routes.Router())
 
 	// Used for testing.
 	r.Mount("/__cplane", cplane.Router())
 	r.Mount("/", hr)
-
-	r.Mount("/auth", auth.Router())
 
 	r.NotFound(page.NotFound)
 

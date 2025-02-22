@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -92,28 +91,13 @@ func signToken(builder *jwt.Builder) (string, error) {
 	return string(signed), nil
 }
 
-func issueRefreshToken(username string, password string) (string, error) {
-	if username != "admin" {
-		return "", errors.New("Invalid username")
-	}
-
-	if password != "admin" {
-		return "", errors.New("Wrong password")
-	}
-
-	builder := getTokenBuilder(time.Now().Add(refreshTokenExpirationDuration))
-	//builder.Audience(audience)
-
-	return signToken(builder)
-}
-
-// Returns true if the token is valid and issued by us. Does not validate anything about the token's claims.
-func VerifyToken(signedToken string) bool {
+// Returns the token if the token is valid and issued by us. Does not validate anything about the token's claims.
+func _verifyTokenIsValid(signedToken string) (jwt.Token, error) {
 	token, err := jwt.Parse([]byte(signedToken), jwt.WithKey(jwa.RS256(), pubkey))
 
 	if err != nil {
 		log.Printf("unable to verify JWT was signed by us: %s", err)
-		return false
+		return nil, err
 	}
 
 	err = jwt.Validate(
@@ -123,9 +107,19 @@ func VerifyToken(signedToken string) bool {
 
 	if err != nil {
 		log.Printf("unable to validate JWT or issuer: %s", err)
-		return false
+		return nil, err
 	}
 
-	// TODO: validate claims?
-	return false
+	return token, nil
+}
+
+// validates a token and returns it.
+func ParseToken(signedToken string) (jwt.Token, error) {
+	token, err := _verifyTokenIsValid(signedToken)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
 }

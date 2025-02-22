@@ -23,7 +23,11 @@
       <a href="/" class="button">LOD2.zip</a>
       <hr />
       <nav class="h">
-        <a href="/auth/login" class="button">Login</a>
+        {{ if .Meta.User }}
+          <a href="/account" class="button">{{ .Meta.User.Name }}</a>
+        {{ else }}
+          <a href="/auth/login" class="button">Login</a>
+        {{ end }}
       </nav>
     </header>
 
@@ -31,7 +35,7 @@
       {{ block "content" . }}<h1>204: NO CONTENT</h1>{{ end }}
     </main>
 
-    <footer id="footer">
+    <footer id="footer" class="h">
       {{ block "footer" . }}
         <span class="copyright">
           Copyright 2025

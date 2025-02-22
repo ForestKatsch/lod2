@@ -37,8 +37,9 @@
   --unit: 1rem;
   --grid: calc(var(--unit) * 4);
 
+  --page: hsl(0, 0%, 95%);
+
   --bg: hsl(0, 0%, 100%);
-  --bg-secondary: hsl(0, 0%, 95%);
   --fg: hsl(0, 0%, 0%);
   --fg-secondary: hsla(0, 0%, 0%, 0.5);
 
@@ -71,7 +72,7 @@ html {
   width: 100%;
   min-height: 100vh;
 
-  background: var(--bg);
+  background: var(--page);
   color: var(--fg);
 
   font-size: 14px;
@@ -94,6 +95,7 @@ body {
 .v,
 .h {
   display: flex;
+  flex-wrap: wrap;
 }
 
 .v {
@@ -104,6 +106,7 @@ body {
 .h {
   flex-direction: row;
   align-items: center;
+  row-gap: 0.5rem;
 }
 
 .gap-1 {

@@ -18,11 +18,12 @@ function main {
   echo "2. Pulling latest changes from Git..."
 
   if ! git diff-index --quiet HEAD --; then
-    echo "! Git repository '${REPO_DIR}' is not clean. Please commit or stash your changes."
-    exit 1
+    echo "hey"
+    #echo "! Git repository '${REPO_DIR}' is not clean. Please commit or stash your changes."
+    #exit 1
   fi
 
-  git pull origin main || echo "Offline or an error occurred. Skipping 'git pull'."
+  #git pull origin main || echo "Offline or an error occurred. Skipping 'git pull'."
 
   #
   echo "3. Rebuilding the binary..."
@@ -37,11 +38,11 @@ function main {
 
   #
   echo "4. Terminating any running instances..."
-  pkill -SIGTERM -f "$BINARY_PATH" || echo "No running instances found."
+  pkill -SIGTERM -f "$BINARY_PATH" || echo "   No running instances found; nothing to terminate"
 
   #
   echo "5. Starting the updated application..."
-  exec "$BINARY_PATH"
+  exec "$BINARY_PATH" "$@"
 }
 
-main
+main "$@"

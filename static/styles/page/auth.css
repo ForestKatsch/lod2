@@ -1,8 +1,7 @@
 .auth-box {
-  max-width: 36rem;
-  margin: 1rem auto;
+  max-width: 38rem;
+  margin: 4rem auto;
   padding: 1rem;
-  padding-top: 4rem;
 
   width: 100%;
 
@@ -22,19 +21,21 @@
 
   .h.gap-fill {
     padding-inline-start: 1rem;
+
     button {
       align-self: flex-end;
       max-width: 10rem;
       flex: 1;
+      margin-inline-start: auto;
     }
   }
 }
 
 /* single-column */
-@media (max-width: 30rem) {
+@media (max-width: 20rem) {
   .auth-box {
     padding: 0;
-    padding-top: 2rem;
+
     table {
       border-inline-start-width: 0;
       border-inline-end-width: 0;

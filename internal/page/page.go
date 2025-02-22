@@ -2,6 +2,7 @@ package page
 
 import (
 	"html/template"
+	"lod2/internal/auth"
 	"log"
 	"net/http"
 	"os"
@@ -101,6 +102,15 @@ func loadPage(path string) (*template.Template, error) {
 	return loadFromFile(templ, path, filepath.Join("templates/pages/", path)), nil
 }
 
+type MetaData struct {
+	Now  time.Time
+	User *UserData
+}
+
+type UserData struct {
+	Name string
+}
+
 // renders a single template
 func Render(w http.ResponseWriter, r *http.Request, path string, data map[string]interface{}) error {
 	templ, err := loadPage(path)
@@ -110,11 +120,19 @@ func Render(w http.ResponseWriter, r *http.Request, path string, data map[string
 	for k, v := range data {
 		pageData[k] = v
 	}
-	pageData["Meta"] = map[string]interface{}{
-		"Now": time.Now(),
+
+	meta := MetaData{
+		Now: time.Now(),
 	}
 
-	// Execute the template. We use the
+	if auth.IsUserLoggedIn(r.Context()) {
+		meta.User = &UserData{
+			Name: auth.GetCurrentUsername(r.Context()),
+		}
+	}
+
+	pageData["Meta"] = meta
+
 	err = templ.ExecuteTemplate(w, path, pageData)
 
 	if err != nil {
