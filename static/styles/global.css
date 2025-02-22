@@ -164,6 +164,10 @@ body {
     cursor: pointer;
   }
 
+  &:focus-visible:not([disabled]) {
+    background: var(--focus);
+  }
+
   &.contrast-high {
     background: var(--fg);
     color: var(--bg);
@@ -178,10 +182,17 @@ body {
       background: var(--fg);
       color: var(--bg);
     }
+    &:focus-visible:not([disabled]) {
+      background: var(--focus);
+    }
   }
 
   &[disabled] {
     opacity: 0.3;
+  }
+
+  &:active:not([disabled]) {
+    opacity: 0.4;
   }
 }
 
@@ -343,7 +354,7 @@ table {
 }
 
 /* single-column */
-@media (max-width: 40rem) {
+@media (max-width: 50rem) {
   body {
     padding: 0;
   }
