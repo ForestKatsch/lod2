@@ -69,18 +69,20 @@
 html {
   font-family: "Berkeley Mono", "JetBrainsMono", "JetBrains Mono", monospace;
 
-  width: 100%;
-  min-height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
 
-  background: var(--page);
+  background-color: var(--page);
   color: var(--fg);
 
   font-size: 14px;
 }
 
 body {
-  min-height: 100svh;
-  width: 100svw;
+  min-height: 100dvh;
+  width: 100dvw;
   margin: 0 auto;
   padding: 1rem;
 
