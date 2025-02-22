@@ -109,6 +109,10 @@ body {
   row-gap: 0.5rem;
 }
 
+.gap-01 {
+  gap: calc(var(--unit) * 0.5);
+}
+
 .gap-1 {
   gap: var(--unit);
 }
@@ -274,6 +278,12 @@ table {
 
   #content {
     padding: 0 1rem;
+  }
+}
+
+@media (max-width: 20rem) {
+  #content {
+    padding: 0;
   }
 }
 

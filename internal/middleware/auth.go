@@ -12,14 +12,15 @@ func validateAuth(w http.ResponseWriter, r *http.Request) context.Context {
 	refreshTokenCookie, refreshErr := r.Cookie(auth.RefreshTokenCookieName)
 	accessTokenCookie, accessErr := r.Cookie(auth.AccessTokenCookieName)
 
-	if refreshErr == nil && accessErr != nil {
+	if refreshErr != nil && accessErr == nil {
 		log.Println("signing out user (has access token but no refresh token?)")
 		auth.SignOut(w, r)
 
 		return r.Context()
 	}
 
-	if refreshTokenCookie == nil && accessTokenCookie == nil {
+	if refreshErr != nil || accessErr != nil {
+		auth.SignOut(w, r)
 		return r.Context()
 	}
 

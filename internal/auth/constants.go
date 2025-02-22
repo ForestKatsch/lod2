@@ -7,7 +7,7 @@ const issuer = "https://lod2.zip"
 const audience = "lod2.zip"
 
 const RefreshTokenExpirationDuration = time.Hour * 6 * 30 * 24
-const AccessTokenExpirationDuration = time.Minute * 15
+const AccessTokenExpirationDuration = time.Second * 15
 
 const RefreshTokenCookieName = "lod2.refresh"
 const AccessTokenCookieName = "lod2.access"
