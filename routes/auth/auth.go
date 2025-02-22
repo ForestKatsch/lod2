@@ -22,6 +22,8 @@ func getNextUrl(r *http.Request, defaultUrl string) string {
 		nextUrl = defaultUrl
 	}
 
+	log.Println("nextUrl:", nextUrl)
+
 	return nextUrl
 }
 
@@ -47,15 +49,13 @@ func Router() chi.Router {
 	})
 
 	r.Get("/logout", func(w http.ResponseWriter, r *http.Request) {
-		nextUrl := getNextUrl(r, "/")
-
 		// check if the user is already logged in
 		if auth.IsUserLoggedIn(r.Context()) {
 			log.Println("signing out user (is logged in)")
 			auth.SignOut(w, r)
 		}
 
-		http.Redirect(w, r, nextUrl, http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	})
 
@@ -64,7 +64,7 @@ func Router() chi.Router {
 
 		username := r.Form.Get("username")
 		password := r.Form.Get("password")
-		next := r.Form.Get("Redirect")
+		next := r.Form.Get("nextRedirectUrl")
 
 		var errorMessage = ""
 

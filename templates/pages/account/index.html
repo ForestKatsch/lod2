@@ -1,7 +1,10 @@
 {{ define "title" }}LOD2.zip - {{ .Meta.User.Name }}{{ end }}
 
 {{ define "content" }}
-  <section><h1>hello, {{ .Meta.User.Name }}</h1></section>
+  <section class="v align-start">
+    <h1>hello, {{ .Meta.User.Name }}</h1>
+    <a class="button contrast-medium" href="/auth/logout">Logout</a>
+  </section>
 {{ end }}
 
 {{ template "layout/main.html" . }}

@@ -117,6 +117,18 @@ body {
   justify-content: space-between;
 }
 
+.align-start {
+  align-items: flex-start;
+}
+
+.align-end {
+  align-items: flex-end;
+}
+
+.align-center {
+  align-items: center;
+}
+
 /* paper */
 .paper {
   border: 1px solid var(--fg);
@@ -258,6 +270,10 @@ table {
     border-inline-end-width: 0;
     border-block-start-width: 0;
     top: 0;
+  }
+
+  #content {
+    padding: 0 1rem;
   }
 }
 
