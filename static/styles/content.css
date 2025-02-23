@@ -25,4 +25,8 @@
     margin: 0;
     border-bottom: 1px dashed var(--fg);
   }
+
+  strong {
+    font-weight: bold;
+  }
 }

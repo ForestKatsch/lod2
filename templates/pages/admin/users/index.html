@@ -2,13 +2,10 @@
 
 {{ define "meta" }}
   <style>
-    #results {
-      td,
-      th {
-        padding: 0.5rem 1rem;
+    #_user_table {
+      .username {
+        width: 12rem;
       }
-
-      overflow-x: auto;
     }
   </style>
 {{ end }}
@@ -18,54 +15,33 @@
     <header class="h">
       <h1>User management</h1>
     </header>
-    <h2>Invite</h2>
-    <form id="login-form" method="POST" class="v auth-box gap-1">
-      <input type="hidden" name="nextRedirectUrl" value="{{ .Redirect }}" />
-
-      <table class="paper">
-        <tbody>
+    <h2>All users</h2>
+    <table id="_user_table" class="paper data padding">
+      <thead>
+        <tr>
+          <th class="username">Username</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Users }}
           <tr>
-            <td>
-              <label for="login-username">Username</label>
+            <td class="username">
+              <strong>
+                <a href="/admin/users/{{ .UserId }}" class="link"
+                  >{{ .Username }}</a
+                >
+              </strong>
             </td>
             <td>
-              <input
-                id="login-username"
-                name="username"
-                type="text"
-                value="{{ .Username }}"
-              />
+              <a href="/admin/users/{{ .UserId }}/sign-out" class="link"
+                >Sign out</a
+              >
             </td>
           </tr>
-
-          <tr>
-            <td>
-              <label for="login-password">Password</label>
-            </td>
-            <td>
-              <input
-                id="login-password"
-                name="password"
-                type="password"
-                value="{{ .Password }}"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      {{ if .Error }}
-        <div class="error alert">{{ .Error }}</div>
-      {{ end }}
-
-
-      <div class="h gap-fill">
-        <a href="/auth/register" class="link contrast-medium"
-          >Forgot password?</a
-        >
-        <button class="_login button contrast-medium">Login</button>
-      </div>
-    </form>
+        {{ end }}
+      </tbody>
+    </table>
   </section>
 {{ end }}
 

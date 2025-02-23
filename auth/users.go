@@ -130,6 +130,7 @@ func verifyUserPassword(userId string, password string) error {
 	return nil
 }
 
+// User-facing change password function. Used by a user to change their own password.
 func ChangePassword(userId string, currentPassword string, newPassword string, newPasswordVerify string) error {
 	err := verifyUserPassword(userId, currentPassword)
 
@@ -154,4 +155,31 @@ func ChangePassword(userId string, currentPassword string, newPassword string, n
 	}
 
 	return nil
+}
+
+func AdminGetAllUsers() ([]UserInfo, error) {
+	rows, err := db.DB.Query("SELECT userId, userName FROM authUsers")
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var users []UserInfo
+
+	for rows.Next() {
+		var userId string
+		var userName string
+
+		err := rows.Scan(&userId, &userName)
+
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, UserInfo{UserId: userId, Username: userName})
+	}
+
+	return users, nil
 }

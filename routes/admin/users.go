@@ -13,13 +13,14 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		Users []auth.UserInfo
 	}
 
-	// users, err := auth.GetUsers()
-	// if err != nil {
-	// 	page.RenderError(w, r, err)
-	// 	return
-	// }
+	users, err := auth.AdminGetAllUsers()
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
 	page.Render(w, r, "admin/users/index.html", map[string]interface{}{
-		"Users": nil,
+		"Users": users,
 	})
 }
 
