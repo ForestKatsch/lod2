@@ -3,9 +3,11 @@
 {{ define "content" }}
   <section class="v gap-01">
     <header class="h gap-fill">
-      <h1>hello, {{ .Meta.User.Username }}</h1>
+      <h1>{{ .Meta.User.Username }}</h1>
       <a class="button contrast-medium" href="/auth/logout">Logout</a>
     </header>
+    <a class="link" href="/account/change-password">Change password</a>
+    <hr />
     Hello, {{ .Meta.User.Username }}! You are logged in.
     <a class="link" href="/admin/">Administrator settings</a>
   </section>

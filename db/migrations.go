@@ -19,16 +19,13 @@ func handleMigrations(db *sql.DB) {
 	if err != nil {
 		log.Printf("failed to create migrations table: %v", err)
 	}
-
-	migrateTable(db, "authUsers", migrateAuthUsersTable)
-	//migrateTable(db, "authInvites", migrateAuthUsersTable)
 }
 
 // A function signature that handles migrations for a single table. Version 0 is
 // always defined as a clean state. Passed in: the DB and current version.
 type MigrateTableFunc func(*sql.DB, int) (int, error)
 
-func migrateTable(db *sql.DB, tableName string, migrateFunc MigrateTableFunc) error {
+func MigrateTable(tableName string, migrateFunc MigrateTableFunc) error {
 	// Get current version
 	var version int
 

@@ -2,10 +2,12 @@ package middleware
 
 import (
 	"context"
-	"lod2/internal/auth"
-	"lod2/internal/page"
+	"lod2/auth"
+	"lod2/page"
 	"log"
 	"net/http"
+
+	"github.com/lestrrat-go/jwx/v3/jwt"
 )
 
 func validateAuth(w http.ResponseWriter, r *http.Request) context.Context {
@@ -30,10 +32,14 @@ func validateAuth(w http.ResponseWriter, r *http.Request) context.Context {
 	}
 
 	refreshToken, _ := auth.ParseToken(refreshTokenCookie.Value)
-	accessToken, accessErr := auth.ParseToken(accessTokenString)
+	var accessToken jwt.Token
+
+	if accessTokenString != "" {
+		accessToken, _ = auth.ParseToken(accessTokenString)
+	}
 
 	// at this point, an expired access token is not a problem and means we need to refresh it
-	if accessErr != nil {
+	if accessToken == nil {
 		accessTokenString, err := auth.IssueAccessToken(refreshToken)
 
 		if err != nil {

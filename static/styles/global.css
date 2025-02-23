@@ -134,6 +134,18 @@ body {
   justify-content: space-between;
 }
 
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
 .align-start {
   align-items: flex-start;
 }
@@ -275,6 +287,10 @@ table {
     border-top: 1px solid var(--fg-secondary);
   }
 
+  tr.hr-below + tr td {
+    border-top: 2px solid var(--fg-secondary);
+  }
+
   label {
     padding: 0.5rem;
     min-width: 8rem;
@@ -316,6 +332,9 @@ table {
 
   &.info {
     --error: var(--fg-secondary);
+  }
+  &.success {
+    --error: hsla(160, 70%, 40%, 1);
   }
 }
 /*** GLOBALS (header) */

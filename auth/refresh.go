@@ -1,13 +1,12 @@
 package auth
 
 import (
-	"lod2/internal/db"
 	"log"
 	"time"
 )
 
 func IssueRefreshToken(username string, password string) (string, error) {
-	userId, err := db.GetUserLogin(username, password)
+	userId, err := getUserLogin(username, password)
 
 	if err != nil {
 		return "", err

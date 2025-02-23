@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"lod2/internal/auth"
-	"lod2/internal/page"
+	"lod2/auth"
+	"lod2/page"
 	"net/http"
 )
 

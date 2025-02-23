@@ -1,8 +1,8 @@
 package admin
 
 import (
-	"lod2/internal/auth"
-	"lod2/internal/page"
+	"lod2/auth"
+	"lod2/page"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -12,13 +12,14 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	type getUserData struct {
 		Users []auth.UserInfo
 	}
-	users, err := auth.GetUsers()
-	if err != nil {
-		page.RenderError(w, r, err)
-		return
-	}
+
+	// users, err := auth.GetUsers()
+	// if err != nil {
+	// 	page.RenderError(w, r, err)
+	// 	return
+	// }
 	page.Render(w, r, "admin/users/index.html", map[string]interface{}{
-		"Users": users,
+		"Users": nil,
 	})
 }
 

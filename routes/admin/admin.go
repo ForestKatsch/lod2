@@ -1,9 +1,9 @@
 package admin
 
 import (
-	"lod2/internal/db"
-	lod2Middleware "lod2/internal/middleware"
-	"lod2/internal/page"
+	"lod2/db"
+	"lod2/middleware"
+	"lod2/page"
 	"log"
 	"net/http"
 
@@ -12,7 +12,7 @@ import (
 
 func Router() chi.Router {
 	r := chi.NewRouter()
-	r.Use(lod2Middleware.AuthRequiredMiddleware())
+	r.Use(middleware.AuthRequiredMiddleware())
 
 	r.Mount("/users", userRouter())
 

@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"lod2/internal/page"
+	"lod2/page"
 	accountRoutes "lod2/routes/account"
 	adminRoutes "lod2/routes/admin"
 	authRoutes "lod2/routes/auth"

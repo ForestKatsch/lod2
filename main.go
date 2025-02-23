@@ -9,32 +9,32 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 
+	"lod2/auth"
 	"lod2/config"
 	"lod2/cplane"
-	"lod2/internal/auth"
-	"lod2/internal/db"
-	lod2Middleware "lod2/internal/middleware"
-	"lod2/internal/page"
+	"lod2/db"
+	"lod2/middleware"
+	"lod2/page"
 	"lod2/routes"
 
-	"github.com/go-chi/chi/v5/middleware"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 
 	"github.com/go-chi/hostrouter"
 )
 
 func main() {
 	config.Init()
-	auth.Init()
 	db.Init()
+	auth.Init()
 
 	// The primary router.
 	r := chi.NewRouter()
 
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.StripSlashes)
+	r.Use(chiMiddleware.RequestID)
+	r.Use(chiMiddleware.RealIP)
+	r.Use(chiMiddleware.Logger)
+	r.Use(chiMiddleware.Recoverer)
+	r.Use(chiMiddleware.StripSlashes)
 
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"https://beta.lod2.zip", "https://cplane.lod2.zip"}, // Use this to allow specific origin hosts
@@ -48,9 +48,9 @@ func main() {
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further
 	// processing should be stopped.
-	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(chiMiddleware.Timeout(60 * time.Second))
 
-	r.Use(lod2Middleware.AuthRefreshMiddleware())
+	r.Use(middleware.AuthRefreshMiddleware())
 
 	// Set up a static route
 	fs := http.FileServer(http.Dir("static"))

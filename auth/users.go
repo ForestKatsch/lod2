@@ -1,4 +1,4 @@
-package db
+package auth
 
 import (
 	"database/sql"
@@ -6,11 +6,16 @@ import (
 	"fmt"
 	"log"
 
-	"lod2/internal/db/auth"
+	"lod2/db"
 
 	"github.com/mattn/go-sqlite3"
 	"go.jetify.com/typeid"
 )
+
+func migrateUsers() {
+	db.MigrateTable("authUsers", migrateAuthUsersTable)
+	//migrateTable(db, "authInvites", migrateAuthUsersTable)
+}
 
 // authUsersTable has rows:
 // userId TEXT
@@ -27,7 +32,7 @@ func migrateAuthUsersTable(db *sql.DB, version int) (int, error) {
 
 	// 2: Adds admin user by default
 	if version < 2 {
-		userId, err := CreateUser("admin", "admin")
+		userId, err := createUser("admin", "admin")
 
 		if err != nil {
 			log.Println("failed to create admin user:", err)
@@ -53,16 +58,16 @@ func migrateAuthUsersTable(db *sql.DB, version int) (int, error) {
 }
 
 // Creates a user with the provided username and password.
-func CreateUser(username string, password string) (string, error) {
+func createUser(username string, password string) (string, error) {
 	userId, _ := typeid.WithPrefix("user")
-	passwordHash, err := auth.HashPassword(password)
+	passwordHash, err := hashPassword(password)
 
 	if err != nil {
 		return "", err
 	}
 
 	fmt.Printf("userId: %v, username: %v, passwordHash: %v\n", userId, username, passwordHash)
-	_, err = db.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash) VALUES (?, ?, ?)", userId, username, passwordHash)
+	_, err = db.DB.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash) VALUES (?, ?, ?)", userId, username, passwordHash)
 
 	if err != nil {
 		var sqliteErr sqlite3.Error
@@ -78,14 +83,12 @@ func CreateUser(username string, password string) (string, error) {
 	return userId.String(), nil
 }
 
-func GetAllUser
-
 // Returns the user ID, or an error if the user does not exist or the password is incorrect.
-func GetUserLogin(username string, password string) (string, error) {
+func getUserLogin(username string, password string) (string, error) {
 	var userId string
 	var passwordHash string
 
-	err := db.QueryRow("SELECT userId, userPasswordHash FROM authUsers WHERE userName = ?", username).Scan(&userId, &passwordHash)
+	err := db.DB.QueryRow("SELECT userId, userPasswordHash FROM authUsers WHERE userName = ?", username).Scan(&userId, &passwordHash)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -95,11 +98,60 @@ func GetUserLogin(username string, password string) (string, error) {
 		return "", err
 	}
 
-	passwordValid := auth.VerifyPassword(passwordHash, password)
+	passwordValid := verifyPassword(passwordHash, password)
 
 	if !passwordValid {
 		return "", errors.New("invalid password")
 	}
 
 	return string(userId), nil
+}
+
+// Returns an error if the userId does not exist or their password is incorrect.
+func verifyUserPassword(userId string, password string) error {
+	var passwordHash string
+
+	err := db.DB.QueryRow("SELECT userPasswordHash FROM authUsers WHERE userId = ?", userId).Scan(&passwordHash)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.New("invalid user id")
+		}
+
+		return err
+	}
+
+	passwordValid := verifyPassword(passwordHash, password)
+
+	if !passwordValid {
+		return errors.New("invalid password")
+	}
+
+	return nil
+}
+
+func ChangePassword(userId string, currentPassword string, newPassword string, newPasswordVerify string) error {
+	err := verifyUserPassword(userId, currentPassword)
+
+	if err != nil {
+		return errors.New("invalid current password")
+	}
+
+	if newPassword != newPasswordVerify {
+		return errors.New("new passwords do not match")
+	}
+
+	newPasswordHash, err := hashPassword(newPassword)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = db.DB.Exec("UPDATE authUsers SET userPasswordHash = ? WHERE userId = ?", newPasswordHash, userId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

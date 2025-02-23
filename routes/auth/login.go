@@ -1,30 +1,15 @@
 package auth
 
 import (
-	"lod2/internal/auth"
-	"lod2/internal/page"
+	"lod2/auth"
+	"lod2/page"
+	"lod2/utils"
 	"log"
 	"net/http"
 )
 
-const nextParam = "next"
-
-func getNextUrl(r *http.Request, defaultUrl string) string {
-	nextUrl := r.URL.Query().Get(nextParam)
-
-	if nextUrl == "" {
-		nextUrl = r.Referer()
-	}
-
-	if nextUrl == "" {
-		nextUrl = defaultUrl
-	}
-
-	return nextUrl
-}
-
 func getLogin(w http.ResponseWriter, r *http.Request) {
-	nextUrl := getNextUrl(r, "/account")
+	nextUrl := utils.GetNextUrl(r, "/account")
 
 	// check if the user is already logged in
 	if auth.IsUserLoggedIn(r.Context()) {

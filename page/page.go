@@ -2,7 +2,7 @@ package page
 
 import (
 	"html/template"
-	"lod2/internal/auth"
+	"lod2/auth"
 	"log"
 	"net/http"
 	"os"

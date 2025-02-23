@@ -1,8 +1,8 @@
 package account
 
 import (
-	lod2Middleware "lod2/internal/middleware"
-	"lod2/internal/page"
+	"lod2/middleware"
+	"lod2/page"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -10,11 +10,14 @@ import (
 
 func Router() chi.Router {
 	r := chi.NewRouter()
-	r.Use(lod2Middleware.AuthRequiredMiddleware())
+	r.Use(middleware.AuthRequiredMiddleware())
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		page.Render(w, r, "account/index.html", map[string]interface{}{})
 	})
+
+	r.Get("/change-password", getChangePassword)
+	r.Post("/change-password", postChangePassword)
 
 	return r
 }

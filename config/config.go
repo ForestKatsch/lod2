@@ -2,7 +2,7 @@ package config
 
 import (
 	"flag"
-	"lod2/internal/utils"
+	"lod2/utils"
 )
 
 var Config struct {

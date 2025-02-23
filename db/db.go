@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 	"lod2/config"
-	"lod2/internal/utils"
+	"lod2/utils"
 	"log"
 	"path/filepath"
 
