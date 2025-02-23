@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"lod2/db"
 
@@ -148,8 +149,18 @@ func ChangePassword(userId string, currentPassword string, newPassword string, n
 	return nil
 }
 
-func AdminGetAllUsers() ([]UserInfo, error) {
-	rows, err := db.DB.Query("SELECT userId, userName FROM authUsers")
+type UserSessionInfo struct {
+	UserId       string
+	Username     string
+	LastLogin    time.Time
+	SessionCount int
+}
+
+func AdminGetAllUsers() ([]UserSessionInfo, error) {
+	rows, err := db.DB.Query(`
+		SELECT authUsers.userId, authUsers.userName, max(authSessions.issuedAt) as lastLogin, count(authSessions.expiresAt < ?) as sessionCount
+		FROM authUsers
+		LEFT JOIN authSessions ON authUsers.userId = authSessions.userId`, time.Now().Unix())
 
 	if err != nil {
 		return nil, err
@@ -157,19 +168,26 @@ func AdminGetAllUsers() ([]UserInfo, error) {
 
 	defer rows.Close()
 
-	var users []UserInfo
+	var users []UserSessionInfo
 
 	for rows.Next() {
 		var userId string
 		var userName string
+		var lastLogin int64
+		var sessionCount int
 
-		err := rows.Scan(&userId, &userName)
+		err := rows.Scan(&userId, &userName, &lastLogin, &sessionCount)
 
 		if err != nil {
 			return nil, err
 		}
 
-		users = append(users, UserInfo{UserId: userId, Username: userName})
+		users = append(users, UserSessionInfo{
+			UserId:       userId,
+			Username:     userName,
+			LastLogin:    time.Unix(lastLogin, 0),
+			SessionCount: sessionCount,
+		})
 	}
 
 	return users, nil

@@ -244,6 +244,7 @@ body {
 
   &:hover {
     color: var(--fg);
+    cursor: pointer;
   }
 }
 
@@ -304,10 +305,6 @@ table {
     tbody {
       tr:nth-child(even) {
         background-color: var(--bg-secondary);
-      }
-
-      tr:hover {
-        background-color: var(--focus);
       }
     }
     td {
