@@ -47,7 +47,21 @@ func validateAuth(w http.ResponseWriter, r *http.Request) context.Context {
 		auth.SetCookie(w, auth.AccessTokenCookieName, accessTokenString, auth.AccessTokenExpirationDuration)
 	}
 
-	ctx := context.WithValue(r.Context(), auth.AccessTokenContextKey, accessToken)
+	// Create the user info object that lives on the context
+	userInfo := auth.UserInfo{}
+
+	accessToken.Get("username", &userInfo.Username)
+
+	subject, valid := accessToken.Subject()
+
+	if !valid {
+		log.Println("error getting subject from access token")
+		auth.SignOut(w, r)
+		return r.Context()
+	}
+	userInfo.UserId = subject
+
+	ctx := context.WithValue(r.Context(), auth.UserInfoContextKey, userInfo)
 
 	return ctx
 }

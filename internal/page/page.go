@@ -106,11 +106,7 @@ type MetaData struct {
 	Status   int
 	Referrer string
 	Now      time.Time
-	User     *UserData
-}
-
-type UserData struct {
-	Name string
+	User     *auth.UserInfo
 }
 
 // renders a single template
@@ -128,11 +124,7 @@ func Render(w http.ResponseWriter, r *http.Request, path string, data map[string
 		Now:      time.Now(),
 	}
 
-	if auth.IsUserLoggedIn(r.Context()) {
-		meta.User = &UserData{
-			Name: auth.GetCurrentUsername(r.Context()),
-		}
-	}
+	meta.User = auth.GetCurrentUserInfo(r.Context())
 
 	pageData["Meta"] = meta
 

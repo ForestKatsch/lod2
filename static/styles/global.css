@@ -50,13 +50,14 @@
   --shadow-color: hsla(0, 0%, 0%, 1);
 
   --inset-shadow-offset: 2px;
-  --inset-shadow-blur: 4px;
-  --inset-shadow-color: hsla(0, 0%, 0%, 0.5);
+  --inset-shadow-color: hsla(0, 0%, 0%, 0.3);
 
   --padding: 0.5rem 1rem;
 
   --shadow: 0 calc(var(--shadow-offset) * 2 + 1px) 0
     calc(var(--shadow-offset) * -1) var(--shadow-color);
+  --inset-shadow: inset var(--inset-shadow-offset) var(--inset-shadow-offset)
+    0px var(--inset-shadow-color);
 
   --link: hsl(210, 100%, 50%);
 
@@ -145,10 +146,33 @@ body {
   align-items: center;
 }
 
+.align-self-start {
+  align-self: flex-start;
+}
+
+.align-self-end {
+  align-self: flex-end;
+}
+
+.align-self-center {
+  align-self: center;
+}
+
+.align-self-stretch {
+  align-self: stretch;
+}
+
 /* paper */
 .paper {
   outline: 1px solid var(--fg);
   box-shadow: var(--shadow);
+  background: var(--bg);
+}
+
+/* inset */
+.inset {
+  outline: 1px solid var(--fg);
+  box-shadow: var(--inset-shadow);
   background: var(--bg);
 }
 
@@ -182,6 +206,7 @@ body {
       background: var(--fg);
       color: var(--bg);
     }
+
     &:focus-visible:not([disabled]) {
       background: var(--focus);
     }

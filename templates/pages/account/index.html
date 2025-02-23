@@ -3,10 +3,10 @@
 {{ define "content" }}
   <section class="v gap-01">
     <header class="h gap-fill">
-      <h1>hello, {{ .Meta.User.Name }}</h1>
+      <h1>hello, {{ .Meta.User.Username }}</h1>
       <a class="button contrast-medium" href="/auth/logout">Logout</a>
     </header>
-    Hello, {{ .Meta.User.Name }}! You are logged in.
+    Hello, {{ .Meta.User.Username }}! You are logged in.
     <a class="link" href="/admin/">Administrator settings</a>
   </section>
 {{ end }}

@@ -24,7 +24,14 @@ func IssueAccessToken(refreshToken jwt.Token) (string, error) {
 
 	builder.Subject(subject)
 	builder.Audience([]string{accessTokenAudience})
-	builder.Claim("type", "refresh")
+	var username string
+	err := refreshToken.Get("username", &username)
+
+	if err != nil {
+		return "", err
+	}
+
+	builder.Claim("username", username)
 
 	signed, err := signToken(builder)
 

@@ -21,6 +21,7 @@ func handleMigrations(db *sql.DB) {
 	}
 
 	migrateTable(db, "authUsers", migrateAuthUsersTable)
+	//migrateTable(db, "authInvites", migrateAuthUsersTable)
 }
 
 // A function signature that handles migrations for a single table. Version 0 is

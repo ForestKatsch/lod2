@@ -1,24 +1,22 @@
 package auth
 
 import (
-	"errors"
+	"lod2/internal/db"
 	"log"
 	"time"
 )
 
 func IssueRefreshToken(username string, password string) (string, error) {
-	// TODO: should probably remove this lmao
-	if username != "admin" {
-		return "", errors.New("Invalid username")
-	}
+	userId, err := db.GetUserLogin(username, password)
 
-	if password != "admin" {
-		return "", errors.New("Invalid password")
+	if err != nil {
+		return "", err
 	}
 
 	builder := getTokenBuilder(time.Now().Add(RefreshTokenExpirationDuration))
 	builder.Audience([]string{"refresh"})
-	builder.Subject(username)
+	builder.Subject(userId)
+	builder.Claim("username", username)
 
 	signed, err := signToken(builder)
 

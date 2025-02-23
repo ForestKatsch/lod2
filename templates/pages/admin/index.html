@@ -25,10 +25,10 @@
     <form class="v gap-01" hx-post="/admin/db/execute" hx-target="#results">
       <textarea
         name="query"
-        class="paper"
+        class="inset"
         placeholder="SELECT * FROM table"
       ></textarea>
-      <button class="contrast-medium button">Execute</button>
+      <button class="button contrast-medium align-self-end">Execute</button>
     </form>
     <section id="results" class="v gap-01">
       <div class="alert info">execute a query to view rows</div>

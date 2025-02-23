@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"lod2/internal/auth"
 	"log"
+
+	"lod2/internal/db/auth"
 
 	"github.com/mattn/go-sqlite3"
 	"go.jetify.com/typeid"
@@ -75,4 +76,30 @@ func CreateUser(username string, password string) (string, error) {
 	}
 
 	return userId.String(), nil
+}
+
+func GetAllUser
+
+// Returns the user ID, or an error if the user does not exist or the password is incorrect.
+func GetUserLogin(username string, password string) (string, error) {
+	var userId string
+	var passwordHash string
+
+	err := db.QueryRow("SELECT userId, userPasswordHash FROM authUsers WHERE userName = ?", username).Scan(&userId, &passwordHash)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", errors.New("invalid username")
+		}
+
+		return "", err
+	}
+
+	passwordValid := auth.VerifyPassword(passwordHash, password)
+
+	if !passwordValid {
+		return "", errors.New("invalid password")
+	}
+
+	return string(userId), nil
 }

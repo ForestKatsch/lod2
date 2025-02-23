@@ -1,34 +1,30 @@
 package auth
 
-import (
-	"context"
+import "context"
 
-	"github.com/lestrrat-go/jwx/v3/jwt"
-)
+const UserInfoContextKey = "userInfo"
 
-const AccessTokenContextKey = "accessToken"
+type UserInfo struct {
+	UserId   string
+	Username string
+}
 
-func GetCurrentUsername(ctx context.Context) string {
+func GetCurrentUserInfo(ctx context.Context) *UserInfo {
 	if ctx == nil {
-		return ""
+		return nil
 	}
 
-	token, ok := ctx.Value(AccessTokenContextKey).(jwt.Token)
+	userInfo, ok := ctx.Value(UserInfoContextKey).(UserInfo)
 
 	if !ok {
-		return ""
+		return nil
 	}
 
-	subject, ok := token.Subject()
-	if !ok {
-		return ""
-	}
-
-	return subject
+	return &userInfo
 }
 
 func IsUserLoggedIn(ctx context.Context) bool {
-	if GetCurrentUsername(ctx) == "" {
+	if GetCurrentUserInfo(ctx) == nil {
 		return false
 	}
 
