@@ -45,7 +45,7 @@ func postLogin(w http.ResponseWriter, r *http.Request) {
 		accessTokenString, err = auth.IssueAccessToken(refreshToken)
 
 		if err != nil {
-			log.Printf("unable to issue access token from refresh token %v", err)
+			log.Printf("unable to issue access token from refresh token: %v", err)
 			errorMessage = "Unexpected error. Check logs for more information"
 		}
 	}

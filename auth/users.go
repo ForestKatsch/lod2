@@ -14,42 +14,33 @@ import (
 
 func migrateUsers() {
 	db.MigrateTable("authUsers", migrateAuthUsersTable)
-	//migrateTable(db, "authInvites", migrateAuthUsersTable)
 }
 
-// authUsersTable has rows:
+// authUsers has rows:
 // userId TEXT
 // userName TEXT
 // userPasswordHash TEXT
 // invitesAvailable INTEGER
 
-func migrateAuthUsersTable(db *sql.DB, version int) (int, error) {
+func migrateAuthUsersTable(tx *sql.Tx, version int) (int, error) {
 	// 1: Table exists
 	if version < 1 {
-		db.Exec("CREATE TABLE authUsers (userId TEXT PRIMARY KEY NOT NULL UNIQUE, userName TEXT NOT NULL UNIQUE, userPasswordHash TEXT NOT NULL UNIQUE) WITHOUT ROWID")
+		tx.Exec("CREATE TABLE authUsers (userId TEXT PRIMARY KEY NOT NULL UNIQUE, userName TEXT NOT NULL UNIQUE, userPasswordHash TEXT NOT NULL UNIQUE) WITHOUT ROWID")
 		version = 1
 	}
 
 	// 2: Adds admin user by default
 	if version < 2 {
-		userId, err := createUser("admin", "admin")
-
-		if err != nil {
-			log.Println("failed to create admin user:", err)
-			return version, err
-		}
-
-		log.Printf("created admin user with ID %s", userId)
+		userId, _ := createUser(tx, "admin", "admin")
+		log.Printf("creating admin user with ID %s", userId)
 		version = 2
 	}
 
 	// 3:
 	if version < 3 {
 		// Add the invitesAvailable column and default this to 0 for all users.
-		transaction, _ := db.Begin()
-		transaction.Exec("ALTER TABLE authUsers ADD COLUMN invitesAvailable INTEGER DEFAULT 0")
-		transaction.Exec("UPDATE authUsers SET invitesAvailable = -1 WHERE userName = 'admin'")
-		transaction.Commit()
+		tx.Exec("ALTER TABLE authUsers ADD COLUMN invitesAvailable INTEGER DEFAULT 0")
+		tx.Exec("UPDATE authUsers SET invitesAvailable = -1 WHERE userName = 'admin'")
 
 		version = 3
 	}
@@ -58,7 +49,7 @@ func migrateAuthUsersTable(db *sql.DB, version int) (int, error) {
 }
 
 // Creates a user with the provided username and password.
-func createUser(username string, password string) (string, error) {
+func createUser(tx *sql.Tx, username string, password string) (string, error) {
 	userId, _ := typeid.WithPrefix("user")
 	passwordHash, err := hashPassword(password)
 
@@ -67,7 +58,7 @@ func createUser(username string, password string) (string, error) {
 	}
 
 	fmt.Printf("userId: %v, username: %v, passwordHash: %v\n", userId, username, passwordHash)
-	_, err = db.DB.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash) VALUES (?, ?, ?)", userId, username, passwordHash)
+	_, err = tx.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash) VALUES (?, ?, ?)", userId, username, passwordHash)
 
 	if err != nil {
 		var sqliteErr sqlite3.Error

@@ -28,8 +28,32 @@ func _deleteAuthCookie(w http.ResponseWriter, name string) {
 	})
 }
 
+func tryInvalidateSession(w http.ResponseWriter, r *http.Request) {
+	refreshTokenCookie, refreshErr := r.Cookie(RefreshTokenCookieName)
+
+	if refreshErr != nil || refreshTokenCookie == nil || refreshTokenCookie.Value == "" {
+		return
+	}
+
+	refreshToken, err := ParseToken(refreshTokenCookie.Value)
+
+	if err != nil {
+		return
+	}
+
+	var sessionId string
+	refreshToken.Get("sid", &sessionId)
+
+	if sessionId == "" {
+		return
+	}
+
+	invalidateSession(sessionId)
+}
+
 func SignOut(w http.ResponseWriter, r *http.Request) {
 	log.Println("signing out user")
+	tryInvalidateSession(w, r)
 	_deleteAuthCookie(w, AccessTokenCookieName)
 	_deleteAuthCookie(w, RefreshTokenCookieName)
 }

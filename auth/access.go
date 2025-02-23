@@ -9,8 +9,6 @@ import (
 )
 
 func IssueAccessToken(refreshToken jwt.Token) (string, error) {
-	builder := getTokenBuilder(time.Now().Add(AccessTokenExpirationDuration))
-
 	subject, exists := refreshToken.Subject()
 	if !exists {
 		return "", errors.New("unable to extract subject from refresh token")
@@ -22,10 +20,26 @@ func IssueAccessToken(refreshToken jwt.Token) (string, error) {
 		return "", errors.New("unable to extract audience from refresh token")
 	}
 
+	var sessionId string
+	err := refreshToken.Get("sid", &sessionId)
+
+	// no existing session found in the refresh token
+	if err != nil {
+		return "", err
+	}
+
+	isValid := getUserSessionIsValid(sessionId)
+
+	if !isValid {
+		return "", errors.New("invalid session")
+	}
+
+	builder := getTokenBuilder(time.Now().Add(AccessTokenExpirationDuration))
 	builder.Subject(subject)
 	builder.Audience([]string{accessTokenAudience})
+
 	var username string
-	err := refreshToken.Get("username", &username)
+	err = refreshToken.Get("username", &username)
 
 	if err != nil {
 		return "", err

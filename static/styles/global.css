@@ -310,6 +310,9 @@ table {
         background-color: var(--focus);
       }
     }
+    td {
+      white-space: nowrap;
+    }
   }
 
   &.padding td,

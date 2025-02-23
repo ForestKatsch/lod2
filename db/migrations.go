@@ -23,7 +23,7 @@ func handleMigrations(db *sql.DB) {
 
 // A function signature that handles migrations for a single table. Version 0 is
 // always defined as a clean state. Passed in: the DB and current version.
-type MigrateTableFunc func(*sql.DB, int) (int, error)
+type MigrateTableFunc func(*sql.Tx, int) (int, error)
 
 func MigrateTable(tableName string, migrateFunc MigrateTableFunc) error {
 	// Get current version
@@ -39,10 +39,25 @@ func MigrateTable(tableName string, migrateFunc MigrateTableFunc) error {
 		}
 	}
 
-	newVersion, err := migrateFunc(db, version)
+	tx, err := db.Begin()
+
+	if err != nil {
+		log.Printf("failed to begin transaction: %v", err)
+		return err
+	}
+
+	newVersion, err := migrateFunc(tx, version)
 
 	if err != nil {
 		log.Printf("failed to migrate %s table: %v", tableName, err)
+		return err
+	}
+
+	err = tx.Commit()
+
+	if err != nil {
+		log.Printf("failed to commit transaction: %v", err)
+		tx.Rollback()
 		return err
 	}
 

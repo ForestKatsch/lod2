@@ -12,10 +12,17 @@ func IssueRefreshToken(username string, password string) (string, error) {
 		return "", err
 	}
 
+	sessionId, err := createUserSession(userId)
+
+	if err != nil {
+		return "", err
+	}
+
 	builder := getTokenBuilder(time.Now().Add(RefreshTokenExpirationDuration))
 	builder.Audience([]string{"refresh"})
 	builder.Subject(userId)
 	builder.Claim("username", username)
+	builder.Claim("sid", sessionId)
 
 	signed, err := signToken(builder)
 
