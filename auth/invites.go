@@ -50,15 +50,17 @@ func adminCreateInvite(userId string, inviteLimit int) (string, error) {
 }
 
 // Resets the specified user's invite to have at least this many invites left.
-func adminSetRemainingInvites(userId string, remainingInvites int) error {
-	currentRemainingInvites, err := invitesRemaining(userId)
+func AdminSetRemainingInvites(userId string, remainingInvites int) error {
+	currentInvitesConsumed, err := invitesConsumed(userId)
+
+	log.Printf("currentInvitesConsumed: %d", currentInvitesConsumed)
 
 	if err != nil {
 		log.Println("error selecting remaining invites:", err)
 		return err
 	}
 
-	newInviteLimit := remainingInvites - currentRemainingInvites
+	newInviteLimit := currentInvitesConsumed + remainingInvites
 
 	_, err = db.DB.Exec("UPDATE authInvites SET inviteLimit = ? WHERE userId = ?", newInviteLimit, userId)
 
@@ -70,10 +72,31 @@ func adminSetRemainingInvites(userId string, remainingInvites int) error {
 	return nil
 }
 
+func invitesConsumed(userId string) (int, error) {
+	var invitesConsumed int
+
+	err := db.DB.QueryRow(`
+		SELECT COUNT(authUsers.userId) as invitesConsumed
+		FROM authInvites
+		LEFT JOIN authUsers ON authInvites.inviteId = authUsers.inviteId
+		WHERE authInvites.userId = ?`, userId).Scan(&invitesConsumed)
+
+	if err != nil {
+		log.Println("error selecting consumed invites:", err)
+		return 0, err
+	}
+
+	return invitesConsumed, nil
+}
+
 func invitesRemaining(userId string) (int, error) {
 	var invitesRemaining int
 
-	err := db.DB.QueryRow("SELECT SUM(inviteLimit) - COUNT(*) as invitesRemaining FROM authInvites WHERE userId = ?", userId).Scan(&invitesRemaining)
+	err := db.DB.QueryRow(`
+		SELECT SUM(authInvites.inviteLimit) - COUNT(authUsers.userId) as invitesRemaining
+		FROM authInvites
+		LEFT JOIN authUsers ON authInvites.inviteId = authUsers.inviteId
+		WHERE authInvites.userId = ?`, userId).Scan(&invitesRemaining)
 
 	if err != nil {
 		log.Println("error selecting remaining invites:", err)

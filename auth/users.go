@@ -174,15 +174,21 @@ type UserSessionInfo struct {
 
 func AdminGetAllUsers() ([]UserSessionInfo, error) {
 	rows, err := db.DB.Query(`
-		SELECT
-			authUsers.userId,
-			authUsers.userName,
-			COALESCE(MAX(authSessions.issuedAt), 0) as lastLogin,
-			COALESCE(COUNT(CASE WHEN authSessions.expiresAt > ? THEN 1 ELSE NULL END), 0) as sessionCount,
-			COALESCE(SUM(inviteLimit), 0) - COUNT(authUsers.inviteId) as invitesRemaining
-		FROM authUsers
-		LEFT JOIN authSessions AS authSessions ON authUsers.userId = authSessions.userId
-		LEFT JOIN authInvites ON authInvites.userId = authUsers.userId`, time.Now().Unix())
+	SELECT
+    authUsers.userId,
+    authUsers.userName,
+    COALESCE(MAX(authSessions.issuedAt), 0) AS lastLogin,
+    COALESCE(COUNT(CASE WHEN authSessions.expiresAt > ? THEN 1 ELSE NULL END), 0) AS sessionCount,
+    COALESCE(invites.inviteLimitTotal, 0) - COUNT(authUsers.inviteId) AS invitesRemaining
+	FROM authUsers
+	LEFT JOIN authSessions ON authUsers.userId = authSessions.userId
+	LEFT JOIN (
+    -- Aggregate invite limits per user first
+    SELECT userId, SUM(inviteLimit) AS inviteLimitTotal
+    FROM authInvites
+    GROUP BY userId
+  ) AS invites ON invites.userId = authUsers.userId
+  GROUP BY authUsers.userId, authUsers.userName, invites.inviteLimitTotal;`, time.Now().Unix())
 
 	if err != nil {
 		return nil, err

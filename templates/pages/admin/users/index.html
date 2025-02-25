@@ -6,9 +6,8 @@
       .username {
         width: 100%;
       }
-
-      .actions {
-        width: 0.1%;
+      th {
+        white-space: nowrap;
       }
     }
   </style>
@@ -28,7 +27,7 @@
           <th class="username">Username</th>
           <th>Last login</th>
           <th>Sessions</th>
-          <th>Invites remaining</th>
+          <th>Invites</th>
         </tr>
       </thead>
       <tbody>
@@ -47,22 +46,32 @@
               >
             </td>
             <td>
-              {{ .SessionCount }}
+              <span class="session-count">{{ .SessionCount }}</span>
               <button
                 class="link"
-                hx-post="/admin/users/{{ .UserId }}/sign-out"
+                hx-post="/admin/users/{{ .UserId }}/end-all-sessions"
                 hx-confirm="End all sessions and require '{{ .Username }}' to login again? It may take up to 15 minutes until all sessions are ended."
+                hx-target="previous .session-count"
               >
                 End all
               </button>
             </td>
             <td>
-              {{ .InvitesRemaining }}
+              <span class="invites-remaining">{{ .InvitesRemaining }}</span>
+              <button
+                class="link"
+                hx-post="/admin/users/{{ .UserId }}/reset-invites?to=5"
+                hx-target="previous .invites-remaining"
+              >
+                Refill
+              </button>
+              /
               <button
                 class="link"
                 hx-post="/admin/users/{{ .UserId }}/reset-invites"
+                hx-target="previous .invites-remaining"
               >
-                Refill
+                Clear
               </button>
             </td>
           </tr>

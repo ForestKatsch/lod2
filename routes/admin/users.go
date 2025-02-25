@@ -5,6 +5,7 @@ import (
 	"lod2/auth"
 	"lod2/page"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -38,7 +39,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func postUserSignOut(w http.ResponseWriter, r *http.Request) {
+func postUserEndAllSessions(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(auth.UserSessionInfo)
 	err := auth.AdminInvalidateAllSessions(user.UserId)
 
@@ -47,7 +48,33 @@ func postUserSignOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("0"))
+}
+
+func postUserResetInvites(w http.ResponseWriter, r *http.Request) {
+	invitesLeftString := r.URL.Query().Get("to")
+
+	if invitesLeftString == "" {
+		invitesLeftString = "0"
+	}
+
+	invitesLeft, err := strconv.Atoi(invitesLeftString)
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
+	user := r.Context().Value("user").(auth.UserSessionInfo)
+	err = auth.AdminSetRemainingInvites(user.UserId, invitesLeft)
+
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(strconv.Itoa(invitesLeft)))
 }
 
 func userRouter() chi.Router {
@@ -57,7 +84,8 @@ func userRouter() chi.Router {
 
 	r.Route("/{userId}", func(r chi.Router) {
 		r.Use(userCtx)
-		r.Post("/sign-out", postUserSignOut)
+		r.Post("/end-all-sessions", postUserEndAllSessions)
+		r.Post("/reset-invites", postUserResetInvites)
 	})
 
 	return r
