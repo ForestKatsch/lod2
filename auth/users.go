@@ -3,7 +3,6 @@ package auth
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -21,7 +20,7 @@ func migrateUsers() {
 // userId TEXT
 // userName TEXT
 // userPasswordHash TEXT
-// invitesAvailable INTEGER
+// inviteId TEXT -- the unique invite code this user used to register
 
 func migrateAuthUsersTable(tx *sql.Tx, version int) (int, error) {
 	// 1: Table exists
@@ -37,13 +36,22 @@ func migrateAuthUsersTable(tx *sql.Tx, version int) (int, error) {
 		version = 2
 	}
 
-	// 3:
+	// 3: invites
 	if version < 3 {
 		// Add the invitesAvailable column and default this to 0 for all users.
 		tx.Exec("ALTER TABLE authUsers ADD COLUMN invitesAvailable INTEGER DEFAULT 0")
 		tx.Exec("UPDATE authUsers SET invitesAvailable = -1 WHERE userName = 'admin'")
 
 		version = 3
+	}
+
+	// 4: update invites
+	if version < 4 {
+		// Remove the invitesAvailable column
+		tx.Exec("ALTER TABLE authUsers DROP COLUMN invitesAvailable")
+		tx.Exec("ALTER TABLE authUsers ADD COLUMN inviteId TEXT DEFAULT NULL")
+
+		version = 4
 	}
 
 	return version, nil
@@ -58,7 +66,6 @@ func createUser(tx *sql.Tx, username string, password string) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("userId: %v, username: %v, passwordHash: %v\n", userId, username, passwordHash)
 	_, err = tx.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash) VALUES (?, ?, ?)", userId, username, passwordHash)
 
 	if err != nil {
@@ -69,6 +76,14 @@ func createUser(tx *sql.Tx, username string, password string) (string, error) {
 			}
 		}
 
+		return "", err
+	}
+
+	inviteId, _ := typeid.WithPrefix("inv")
+
+	_, err = tx.Exec("INSERT INTO authInvites (inviteId, userId, issuedAt, inviteLimit) VALUES (?, ?, ?, ?)", inviteId, userId, time.Now().Unix(), 5)
+
+	if err != nil {
 		return "", err
 	}
 
@@ -150,17 +165,24 @@ func ChangePassword(userId string, currentPassword string, newPassword string, n
 }
 
 type UserSessionInfo struct {
-	UserId       string
-	Username     string
-	LastLogin    time.Time
-	SessionCount int
+	UserId           string
+	Username         string
+	LastLogin        time.Time
+	SessionCount     int
+	InvitesRemaining int
 }
 
 func AdminGetAllUsers() ([]UserSessionInfo, error) {
 	rows, err := db.DB.Query(`
-		SELECT authUsers.userId, authUsers.userName, max(authSessions.issuedAt) as lastLogin, count(authSessions.expiresAt < ?) as sessionCount
+		SELECT
+			authUsers.userId,
+			authUsers.userName,
+			COALESCE(MAX(authSessions.issuedAt), 0) as lastLogin,
+			COALESCE(COUNT(CASE WHEN authSessions.expiresAt > ? THEN 1 ELSE NULL END), 0) as sessionCount,
+			COALESCE(SUM(inviteLimit), 0) - COUNT(authUsers.inviteId) as invitesRemaining
 		FROM authUsers
-		LEFT JOIN authSessions ON authUsers.userId = authSessions.userId`, time.Now().Unix())
+		LEFT JOIN authSessions AS authSessions ON authUsers.userId = authSessions.userId
+		LEFT JOIN authInvites ON authInvites.userId = authUsers.userId`, time.Now().Unix())
 
 	if err != nil {
 		return nil, err
@@ -175,20 +197,59 @@ func AdminGetAllUsers() ([]UserSessionInfo, error) {
 		var userName string
 		var lastLogin int64
 		var sessionCount int
+		var invitesRemaining int
 
-		err := rows.Scan(&userId, &userName, &lastLogin, &sessionCount)
+		err := rows.Scan(&userId, &userName, &lastLogin, &sessionCount, &invitesRemaining)
 
 		if err != nil {
 			return nil, err
 		}
 
 		users = append(users, UserSessionInfo{
-			UserId:       userId,
-			Username:     userName,
-			LastLogin:    time.Unix(lastLogin, 0),
-			SessionCount: sessionCount,
+			UserId:           userId,
+			Username:         userName,
+			LastLogin:        time.Unix(lastLogin, 0),
+			SessionCount:     sessionCount,
+			InvitesRemaining: invitesRemaining,
 		})
 	}
 
 	return users, nil
+}
+
+func AdminGetUserById(userId string) (UserSessionInfo, error) {
+	row := db.DB.QueryRow(`
+		SELECT
+			authUsers.userId,
+			authUsers.userName,
+			max(authSessions.issuedAt) as lastLogin,
+			count(authSessions.expiresAt < ?) as sessionCount,
+			COALESCE(SUM(inviteLimit), 0) - COUNT(authUsers.inviteId) as invitesRemaining
+		FROM authUsers
+		LEFT JOIN authSessions ON authUsers.userId = authSessions.userId
+		LEFT JOIN authInvites ON authInvites.userId = authUsers.userId
+		WHERE authUsers.userId = ?`, time.Now().Unix(), userId)
+
+	if row == nil {
+		return UserSessionInfo{}, errors.New("invalid user id")
+	}
+
+	var userName string
+	var lastLogin int64
+	var sessionCount int
+	var invitesRemaining int
+
+	err := row.Scan(&userId, &userName, &lastLogin, &sessionCount, &invitesRemaining)
+
+	if err != nil {
+		return UserSessionInfo{}, err
+	}
+
+	return UserSessionInfo{
+		UserId:           userId,
+		Username:         userName,
+		LastLogin:        time.Unix(lastLogin, 0),
+		SessionCount:     sessionCount,
+		InvitesRemaining: invitesRemaining,
+	}, nil
 }

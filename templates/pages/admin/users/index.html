@@ -17,7 +17,10 @@
 {{ define "content" }}
   <section class="v gap-1">
     <header class="h">
-      <h1>User management</h1>
+      <nav class="breadcrumbs">
+        <a href="/admin">Admin</a>
+        <a href="/admin/users">User management</a>
+      </nav>
     </header>
     <table id="_user_table" class="paper data padding">
       <thead>
@@ -25,7 +28,7 @@
           <th class="username">Username</th>
           <th>Last login</th>
           <th>Sessions</th>
-          <th class="actions">Actions</th>
+          <th>Invites remaining</th>
         </tr>
       </thead>
       <tbody>
@@ -45,16 +48,29 @@
             </td>
             <td>
               {{ .SessionCount }}
+              <button
+                class="link"
+                hx-post="/admin/users/{{ .UserId }}/sign-out"
+                hx-confirm="End all sessions and require '{{ .Username }}' to login again? It may take up to 15 minutes until all sessions are ended."
+              >
+                End all
+              </button>
             </td>
             <td>
-              <button class="link">Sign out</button>
+              {{ .InvitesRemaining }}
+              <button
+                class="link"
+                hx-post="/admin/users/{{ .UserId }}/reset-invites"
+              >
+                Refill
+              </button>
             </td>
           </tr>
         {{ end }}
       </tbody>
     </table>
     <div class="h justify-end">
-      <button class="button contrast-medium">Invite</button>
+      <a class="button contrast-medium" hx-post="/admin/users/invite">Invite</a>
     </div>
   </section>
 {{ end }}

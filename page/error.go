@@ -12,5 +12,6 @@ func RenderError(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 func NotFound(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
 	Render(w, r, "/_error/404.html", nil)
 }
