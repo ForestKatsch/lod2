@@ -51,6 +51,8 @@ func adminCreateInvite(userId string, inviteLimit int) (string, error) {
 
 // Resets the specified user's invite to have at least this many invites left.
 func AdminSetRemainingInvites(userId string, remainingInvites int) error {
+	newInviteId, _ := typeid.WithPrefix("inv")
+
 	currentInvitesConsumed, err := invitesConsumed(userId)
 
 	log.Printf("currentInvitesConsumed: %d", currentInvitesConsumed)
@@ -62,7 +64,14 @@ func AdminSetRemainingInvites(userId string, remainingInvites int) error {
 
 	newInviteLimit := currentInvitesConsumed + remainingInvites
 
-	_, err = db.DB.Exec("UPDATE authInvites SET inviteLimit = ? WHERE userId = ?", newInviteLimit, userId)
+	_, err = db.DB.Exec(`
+    INSERT INTO authInvites (inviteId, userId, issuedAt, inviteLimit)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(inviteId)
+    DO UPDATE SET inviteLimit = excluded.inviteLimit
+    ON CONFLICT(userId)
+    DO UPDATE SET inviteLimit = excluded.inviteLimit
+`, newInviteId, userId, time.Now().Unix(), newInviteLimit)
 
 	if err != nil {
 		log.Println("error updating invite:", err)
