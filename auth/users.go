@@ -3,7 +3,6 @@ package auth
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"time"
 
 	"lod2/db"
@@ -12,50 +11,11 @@ import (
 	"go.jetify.com/typeid"
 )
 
-func migrateUsers() {
-	db.MigrateTable("authUsers", migrateAuthUsersTable)
-}
-
 // authUsers has rows:
 // userId TEXT
 // userName TEXT
 // userPasswordHash TEXT
 // inviteId TEXT -- the unique invite code this user used to register
-
-func migrateAuthUsersTable(tx *sql.Tx, version int) (int, error) {
-	// 1: Table exists
-	if version < 1 {
-		tx.Exec("CREATE TABLE authUsers (userId TEXT PRIMARY KEY NOT NULL UNIQUE, userName TEXT NOT NULL UNIQUE, userPasswordHash TEXT NOT NULL UNIQUE) WITHOUT ROWID")
-		version = 1
-	}
-
-	// 2: Adds admin user by default
-	if version < 2 {
-		userId, _ := createUser(tx, "admin", "admin")
-		log.Printf("creating admin user with ID %s", userId)
-		version = 2
-	}
-
-	// 3: invites
-	if version < 3 {
-		// Add the invitesAvailable column and default this to 0 for all users.
-		tx.Exec("ALTER TABLE authUsers ADD COLUMN invitesAvailable INTEGER DEFAULT 0")
-		tx.Exec("UPDATE authUsers SET invitesAvailable = -1 WHERE userName = 'admin'")
-
-		version = 3
-	}
-
-	// 4: update invites
-	if version < 4 {
-		// Remove the invitesAvailable column
-		tx.Exec("ALTER TABLE authUsers DROP COLUMN invitesAvailable")
-		tx.Exec("ALTER TABLE authUsers ADD COLUMN inviteId TEXT DEFAULT NULL")
-
-		version = 4
-	}
-
-	return version, nil
-}
 
 // Creates a user with the provided username and password.
 func createUser(tx *sql.Tx, username string, password string) (string, error) {

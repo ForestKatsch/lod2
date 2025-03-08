@@ -21,15 +21,15 @@ func handleMigrations(db *sql.DB) {
 	}
 }
 
-// A function signature that handles migrations for a single table. Version 0 is
+// A function signature that handles migrations for a single feature. Version 0 is
 // always defined as a clean state. Passed in: the DB and current version.
-type MigrateTableFunc func(*sql.Tx, int) (int, error)
+type MigrateFunc func(*sql.Tx, int) (int, error)
 
-func MigrateTable(tableName string, migrateFunc MigrateTableFunc) error {
+func Migrate(name string, migrateFunc MigrateFunc) error {
 	// Get current version
 	var version int
 
-	err := db.QueryRow("SELECT Version FROM _migrations WHERE TableName = ?", tableName).Scan(&version)
+	err := db.QueryRow("SELECT Version FROM _migrations WHERE TableName = ?", name).Scan(&version)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -49,7 +49,7 @@ func MigrateTable(tableName string, migrateFunc MigrateTableFunc) error {
 	newVersion, err := migrateFunc(tx, version)
 
 	if err != nil {
-		log.Printf("failed to migrate %s table: %v", tableName, err)
+		log.Printf("failed to migrate %s: %v", name, err)
 		return err
 	}
 
@@ -62,11 +62,11 @@ func MigrateTable(tableName string, migrateFunc MigrateTableFunc) error {
 	}
 
 	if version != newVersion {
-		log.Printf("migrated %s table to version %d", tableName, newVersion)
+		log.Printf("migrated %s to version %d", name, newVersion)
 	}
 
 	// Now, update the row in the DB to have the correct version, and insert it if needed.
-	_, err = db.Exec("INSERT INTO _migrations (TableName, Version) VALUES (?, ?) ON CONFLICT(TableName) DO UPDATE SET Version = ?", tableName, newVersion, newVersion)
+	_, err = db.Exec("INSERT INTO _migrations (TableName, Version) VALUES (?, ?) ON CONFLICT(TableName) DO UPDATE SET Version = ?", name, newVersion, newVersion)
 
 	if err != nil {
 		log.Printf("failed to update migrations table: %v", err)

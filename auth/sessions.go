@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"database/sql"
 	"log"
 	"time"
 
@@ -10,99 +9,12 @@ import (
 	"go.jetify.com/typeid"
 )
 
-func migrateSessions() {
-	db.MigrateTable("authSessions", migrateAuthSessionsTable)
-}
-
 // authSessions table has rows:
 // sessionId TEXT
 // userId TEXT
 // expiresAt INTEGER - after this time, the session is expired and the user must log in again
+// refreshedAt INTEGER - the most recent time the access token was refreshed based on this session
 // issuedAt INTEGER - when the session was created
-
-func migrateAuthSessionsTable(tx *sql.Tx, version int) (int, error) {
-	// 1: Table exists
-	if version < 1 {
-		_, err := tx.Exec("CREATE TABLE authSessions (sessionId TEXT PRIMARY KEY NOT NULL UNIQUE, userId TEXT NOT NULL, expiresAt DATETIME NOT NULL) WITHOUT ROWID")
-
-		if err != nil {
-			return version, err
-		}
-
-		version = 1
-	}
-
-	// 2: Add issuedAt
-	if version < 2 {
-		_, err := tx.Exec("ALTER TABLE authSessions ADD COLUMN issuedAt DATETIME DEFAULT CURRENT_TIMESTAMP")
-
-		if err != nil {
-			return version, err
-		}
-
-		version = 2
-	}
-
-	// 3: Update expiresAt and issuedAt to be integers, not datetime
-	if version < 3 {
-		_, err := tx.Exec("ALTER TABLE authSessions ADD COLUMN expiresAtEpoch INTEGER DEFAULT 0")
-		if err != nil {
-			return version, err
-		}
-
-		_, err = tx.Exec("ALTER TABLE authSessions ADD COLUMN issuedAtEpoch INTEGER DEFAULT 0")
-		if err != nil {
-			return version, err
-		}
-
-		// Copy the data
-		_, err = tx.Exec("UPDATE authSessions SET expiresAtEpoch = strftime('%s', expiresAt)")
-		if err != nil {
-			return version, err
-		}
-
-		_, err = tx.Exec("UPDATE authSessions SET issuedAtEpoch = strftime('%s', issuedAt)")
-		if err != nil {
-			return version, err
-		}
-
-		// Delete the old columns
-		_, err = tx.Exec("ALTER TABLE authSessions DROP COLUMN expiresAt")
-		if err != nil {
-			return version, err
-		}
-
-		_, err = tx.Exec("ALTER TABLE authSessions DROP COLUMN issuedAt")
-		if err != nil {
-			return version, err
-		}
-
-		// Rename the columns
-		_, err = tx.Exec("ALTER TABLE authSessions RENAME COLUMN expiresAtEpoch TO expiresAt")
-		if err != nil {
-			return version, err
-		}
-
-		_, err = tx.Exec("ALTER TABLE authSessions RENAME COLUMN issuedAtEpoch TO issuedAt")
-		if err != nil {
-			return version, err
-		}
-
-		version = 3
-	}
-
-	// 4: add
-	if version < 4 {
-		_, err := tx.Exec("ALTER TABLE authSessions ADD COLUMN refreshedAt INTEGER DEFAULT 0")
-
-		if err != nil {
-			return version, err
-		}
-
-		version = 4
-	}
-	return version, nil
-}
 
 // Creates a new user session and returns the session ID.
 func createUserSession(userId string) (string, error) {

@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"database/sql"
 	"log"
 	"time"
 
@@ -10,30 +9,11 @@ import (
 	"go.jetify.com/typeid"
 )
 
-func migrateInvites() {
-	db.MigrateTable("authInvites", migrateInvitesTable)
-}
-
 // authInvites table has rows:
 // inviteId TEXT -- the unique invite code
 // userId TEXT -- the user who created this invite
 // issuedAt INTEGER - when the invite was created
 // inviteLimit INTEGER - how many times this invite can be used
-
-func migrateInvitesTable(tx *sql.Tx, version int) (int, error) {
-	// 1: Table exists
-	if version < 1 {
-		_, err := tx.Exec("CREATE TABLE authInvites (inviteId TEXT PRIMARY KEY NOT NULL UNIQUE, userId TEXT NOT NULL UNIQUE, issuedAt INTEGER NOT NULL, inviteLimit INTEGER NOT NULL) WITHOUT ROWID")
-
-		if err != nil {
-			return version, err
-		}
-
-		version = 1
-	}
-
-	return version, nil
-}
 
 // Creates a new invite for the given user ID; returns the invite ID if successful, error otherwise.
 func adminCreateInvite(userId string, inviteLimit int) (string, error) {
