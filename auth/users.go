@@ -168,6 +168,7 @@ type UserSessionInfo struct {
 	UserId           string
 	Username         string
 	LastLogin        time.Time
+	LastActivity     time.Time
 	SessionCount     int
 	InvitesRemaining int
 }
@@ -178,6 +179,7 @@ func AdminGetAllUsers() ([]UserSessionInfo, error) {
     authUsers.userId,
     authUsers.userName,
     COALESCE(MAX(authSessions.issuedAt), 0) AS lastLogin,
+    COALESCE(MAX(authSessions.refreshedAt), 0) AS lastActivity,
     COALESCE(COUNT(CASE WHEN authSessions.expiresAt > ? THEN 1 ELSE NULL END), 0) AS sessionCount,
     COALESCE(invites.inviteLimitTotal, 0) - COUNT(authUsers.inviteId) AS invitesRemaining
 	FROM authUsers
@@ -202,19 +204,25 @@ func AdminGetAllUsers() ([]UserSessionInfo, error) {
 		var userId string
 		var userName string
 		var lastLogin int64
+		var lastActivity int64
 		var sessionCount int
 		var invitesRemaining int
 
-		err := rows.Scan(&userId, &userName, &lastLogin, &sessionCount, &invitesRemaining)
+		err := rows.Scan(&userId, &userName, &lastLogin, &lastActivity, &sessionCount, &invitesRemaining)
 
 		if err != nil {
 			return nil, err
+		}
+
+		if lastActivity == 0 {
+			lastActivity = lastLogin
 		}
 
 		users = append(users, UserSessionInfo{
 			UserId:           userId,
 			Username:         userName,
 			LastLogin:        time.Unix(lastLogin, 0),
+			LastActivity:     time.Unix(lastActivity, 0),
 			SessionCount:     sessionCount,
 			InvitesRemaining: invitesRemaining,
 		})

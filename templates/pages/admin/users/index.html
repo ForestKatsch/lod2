@@ -26,6 +26,7 @@
         <tr>
           <th class="username">Username</th>
           <th>Last login</th>
+          <th>Last activity</th>
           <th>Sessions</th>
           <th>Invites</th>
         </tr>
@@ -43,6 +44,11 @@
             <td>
               <time datetime="{{ .LastLogin }}"
                 >{{ .LastLogin | ago }} ago</time
+              >
+            </td>
+            <td>
+              <time datetime="{{ .LastActivity }}"
+                >{{ .LastActivity | ago }} ago</time
               >
             </td>
             <td>

@@ -34,6 +34,8 @@ func IssueAccessToken(refreshToken jwt.Token) (string, error) {
 		return "", errors.New("invalid session")
 	}
 
+	updateUserSessionRefresh(sessionId)
+
 	builder := getTokenBuilder(time.Now().Add(AccessTokenExpirationDuration))
 	builder.Subject(subject)
 	builder.Audience([]string{accessTokenAudience})

@@ -91,6 +91,16 @@ func migrateAuthSessionsTable(tx *sql.Tx, version int) (int, error) {
 		version = 3
 	}
 
+	// 4: add
+	if version < 4 {
+		_, err := tx.Exec("ALTER TABLE authSessions ADD COLUMN refreshedAt INTEGER DEFAULT 0")
+
+		if err != nil {
+			return version, err
+		}
+
+		version = 4
+	}
 	return version, nil
 }
 
@@ -99,7 +109,7 @@ func createUserSession(userId string) (string, error) {
 	sessionId, _ := typeid.WithPrefix("session")
 	expiresAt := time.Now().Add(RefreshTokenExpirationDuration)
 
-	_, err := db.DB.Exec("INSERT INTO authSessions (sessionId, userId, issuedAt, expiresAt) VALUES (?, ?, ?, ?)", sessionId, userId, time.Now().Unix(), expiresAt.Unix())
+	_, err := db.DB.Exec("INSERT INTO authSessions (sessionId, userId, issuedAt, refreshedAt, expiresAt) VALUES (?, ?, ?, ?, ?)", sessionId, userId, time.Now().Unix(), time.Now().Unix(), expiresAt.Unix())
 
 	if err != nil {
 		log.Println("error creating session:", err)
@@ -107,6 +117,20 @@ func createUserSession(userId string) (string, error) {
 	}
 
 	return sessionId.String(), nil
+}
+
+// Updates the provided session to indicate it has just been refreshed.
+func updateUserSessionRefresh(sessionId string) error {
+	refreshedAt := time.Now().Unix()
+
+	_, err := db.DB.Exec("UPDATE authSessions SET refreshedAt = ? WHERE sessionId = ?", refreshedAt, sessionId)
+
+	if err != nil {
+		log.Println("error updating session:", err)
+		return err
+	}
+
+	return nil
 }
 
 // Returns true if the session exists and is not expired.
