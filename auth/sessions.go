@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -12,9 +13,9 @@ import (
 // authSessions table has rows:
 // sessionId TEXT
 // userId TEXT
+// issuedAt INTEGER - when the session was created
 // expiresAt INTEGER - after this time, the session is expired and the user must log in again
 // refreshedAt INTEGER - the most recent time the access token was refreshed based on this session
-// issuedAt INTEGER - when the session was created
 
 // Creates a new user session and returns the session ID.
 func createUserSession(userId string) (string, error) {
@@ -85,4 +86,46 @@ func AdminInvalidateAllSessions(userId string) error {
 	log.Printf("all sessions for %s invalidated", userId)
 
 	return nil
+}
+
+type UserSession struct {
+	SessionId   string
+	IssuedAt    int64
+	ExpiresAt   int64
+	RefreshedAt int64
+	Expired     bool
+}
+
+func AdminGetUserSessions(userId string) ([]UserSession, error) {
+	rows, err := db.DB.Query(`
+		SELECT
+			sessionId,
+			issuedAt,
+			expiresAt,
+			refreshedAt
+		FROM authSessions
+		WHERE userId = ?
+		ORDER BY issuedAt DESC`, userId)
+
+	if err != nil {
+		return nil, errors.New("invalid user id")
+	}
+
+	defer rows.Close()
+
+	var sessions []UserSession
+
+	for rows.Next() {
+		var session UserSession
+		err := rows.Scan(&session.SessionId, &session.IssuedAt, &session.ExpiresAt, &session.RefreshedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		session.Expired = session.ExpiresAt <= time.Now().Unix()
+
+		sessions = append(sessions, session)
+	}
+
+	return sessions, nil
 }

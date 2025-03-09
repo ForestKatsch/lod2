@@ -42,8 +42,10 @@
   --page: hsl(0, 0%, 95%);
 
   --bg: hsl(0, 0%, 100%);
-  --fg: hsl(0, 0%, 0%);
   --bg-secondary: hsl(0, 0%, 95%);
+  --bg-tertiary: hsl(0, 0%, 92%);
+
+  --fg: hsl(0, 0%, 0%);
   --fg-secondary: hsla(0, 0%, 0%, 0.5);
 
   --shadow-offset: 2px;
@@ -128,6 +130,10 @@ body {
 
 .gap-1 {
   gap: var(--unit);
+}
+
+.gap-2 {
+  gap: calc(var(--unit) * 2);
 }
 
 .gap-fill {
@@ -268,13 +274,26 @@ textarea {
 
 /* table */
 
+.table_container {
+  overflow-x: auto;
+}
+
 table {
   border-spacing: 0;
 
   thead {
     background-color: var(--bg-secondary);
 
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--bg-tertiary) 0,
+      var(--bg-tertiary) 4px,
+      transparent 4px,
+      transparent 8px
+    );
+
     th {
+      font-weight: bold;
       border-bottom: 1px solid var(--fg-secondary);
     }
   }

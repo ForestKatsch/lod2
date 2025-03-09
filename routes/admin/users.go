@@ -39,6 +39,21 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func getUser(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("user").(auth.UserSessionInfo)
+	sessions, err := auth.AdminGetUserSessions(user.UserId)
+
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
+	page.Render(w, r, "admin/users/user/index.html", map[string]interface{}{
+		"User":     user,
+		"Sessions": sessions,
+	})
+}
+
 func postUserEndAllSessions(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(auth.UserSessionInfo)
 	err := auth.AdminInvalidateAllSessions(user.UserId)
@@ -84,6 +99,7 @@ func userRouter() chi.Router {
 
 	r.Route("/{userId}", func(r chi.Router) {
 		r.Use(userCtx)
+		r.Get("/", getUser)
 		r.Post("/end-all-sessions", postUserEndAllSessions)
 		r.Post("/reset-invites", postUserResetInvites)
 	})

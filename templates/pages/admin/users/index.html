@@ -56,7 +56,7 @@
               <button
                 class="link"
                 hx-post="/admin/users/{{ .UserId }}/end-all-sessions"
-                hx-confirm="End all sessions and require '{{ .Username }}' to login again? It may take up to 15 minutes until all sessions are ended."
+                hx-confirm="End all sessions and require '{{ .Username }}' to login again? It may take a few minutes until all sessions are ended."
                 hx-target="previous .session-count"
               >
                 End all

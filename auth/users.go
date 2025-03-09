@@ -16,9 +16,10 @@ import (
 // userName TEXT
 // userPasswordHash TEXT
 // inviteId TEXT -- the unique invite code this user used to register
+// createdAt INTEGER -- when the user was created, unix time
 
 // Creates a user with the provided username and password.
-func createUser(tx *sql.Tx, username string, password string) (string, error) {
+func createUser(tx *sql.Tx, username string, password string, roles []Role) (string, error) {
 	userId, _ := typeid.WithPrefix("user")
 	passwordHash, err := hashPassword(password)
 
@@ -26,7 +27,7 @@ func createUser(tx *sql.Tx, username string, password string) (string, error) {
 		return "", err
 	}
 
-	_, err = tx.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash) VALUES (?, ?, ?)", userId, username, passwordHash)
+	_, err = tx.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash, createdAt) VALUES (?, ?, ?, ?)", userId, username, passwordHash, time.Now().Unix())
 
 	if err != nil {
 		var sqliteErr sqlite3.Error
@@ -42,6 +43,12 @@ func createUser(tx *sql.Tx, username string, password string) (string, error) {
 	inviteId, _ := typeid.WithPrefix("inv")
 
 	_, err = tx.Exec("INSERT INTO authInvites (inviteId, userId, issuedAt, inviteLimit) VALUES (?, ?, ?, ?)", inviteId, userId, time.Now().Unix(), 5)
+
+	if err != nil {
+		return "", err
+	}
+
+	err = addRoles(tx, userId.String(), roles)
 
 	if err != nil {
 		return "", err
@@ -129,6 +136,7 @@ type UserSessionInfo struct {
 	Username         string
 	LastLogin        time.Time
 	LastActivity     time.Time
+	CreatedAt        time.Time
 	SessionCount     int
 	InvitesRemaining int
 }
@@ -140,6 +148,7 @@ func AdminGetAllUsers() ([]UserSessionInfo, error) {
     authUsers.userName,
     COALESCE(MAX(authSessions.issuedAt), 0) AS lastLogin,
     COALESCE(MAX(authSessions.refreshedAt), 0) AS lastActivity,
+    authUsers.createdAt,
     COALESCE(COUNT(CASE WHEN authSessions.expiresAt > ? THEN 1 ELSE NULL END), 0) AS sessionCount,
     COALESCE(invites.inviteLimitTotal, 0) - COUNT(authUsers.inviteId) AS invitesRemaining
 	FROM authUsers
@@ -165,10 +174,11 @@ func AdminGetAllUsers() ([]UserSessionInfo, error) {
 		var userName string
 		var lastLogin int64
 		var lastActivity int64
+		var createdAt int64
 		var sessionCount int
 		var invitesRemaining int
 
-		err := rows.Scan(&userId, &userName, &lastLogin, &lastActivity, &sessionCount, &invitesRemaining)
+		err := rows.Scan(&userId, &userName, &lastLogin, &lastActivity, &createdAt, &sessionCount, &invitesRemaining)
 
 		if err != nil {
 			return nil, err
@@ -183,6 +193,7 @@ func AdminGetAllUsers() ([]UserSessionInfo, error) {
 			Username:         userName,
 			LastLogin:        time.Unix(lastLogin, 0),
 			LastActivity:     time.Unix(lastActivity, 0),
+			CreatedAt:        time.Unix(createdAt, 0),
 			SessionCount:     sessionCount,
 			InvitesRemaining: invitesRemaining,
 		})
@@ -191,12 +202,34 @@ func AdminGetAllUsers() ([]UserSessionInfo, error) {
 	return users, nil
 }
 
+func AdminGetUserIdByUsername(tx *sql.Tx, username string) (string, error) {
+	row := tx.QueryRow(`
+		SELECT
+			authUsers.userId
+		FROM authUsers
+		WHERE authUsers.userName = ?`, username)
+
+	if row == nil {
+		return "", errors.New("invalid username")
+	}
+
+	var userId string
+	err := row.Scan(&userId)
+
+	if err != nil {
+		return "", err
+	}
+
+	return userId, nil
+}
+
 func AdminGetUserById(userId string) (UserSessionInfo, error) {
 	row := db.DB.QueryRow(`
 		SELECT
 			authUsers.userId,
 			authUsers.userName,
 			max(authSessions.issuedAt) as lastLogin,
+			authUsers.createdAt,
 			count(authSessions.expiresAt < ?) as sessionCount,
 			COALESCE(SUM(inviteLimit), 0) - COUNT(authUsers.inviteId) as invitesRemaining
 		FROM authUsers
@@ -210,10 +243,11 @@ func AdminGetUserById(userId string) (UserSessionInfo, error) {
 
 	var userName string
 	var lastLogin int64
+	var createdAt int64
 	var sessionCount int
 	var invitesRemaining int
 
-	err := row.Scan(&userId, &userName, &lastLogin, &sessionCount, &invitesRemaining)
+	err := row.Scan(&userId, &userName, &lastLogin, &createdAt, &sessionCount, &invitesRemaining)
 
 	if err != nil {
 		return UserSessionInfo{}, err
@@ -223,6 +257,7 @@ func AdminGetUserById(userId string) (UserSessionInfo, error) {
 		UserId:           userId,
 		Username:         userName,
 		LastLogin:        time.Unix(lastLogin, 0),
+		CreatedAt:        time.Unix(createdAt, 0),
 		SessionCount:     sessionCount,
 		InvitesRemaining: invitesRemaining,
 	}, nil
