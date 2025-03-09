@@ -31,10 +31,13 @@
   }
 
   .breadcrumbs {
+    flex: 1;
     font-size: 1.2rem;
     font-weight: bold;
 
     display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 
     a {
       text-decoration: underline;

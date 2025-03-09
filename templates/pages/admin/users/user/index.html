@@ -14,20 +14,34 @@
       </nav>
     </header>
 
-    <table class="paper padding">
-      <tr>
-        <td>User ID</td>
-        <td>{{ .User.UserId }}</td>
-      </tr>
-      <tr>
-        <td>Created at</td>
-        <td>
-          <time datetime="{{ .User.CreatedAt }}"
-            >{{ .User.CreatedAt | date "2006-01-02 15:04:05" }}</time
-          >
-        </td>
-      </tr>
-    </table>
+    <div class="v paper table_container">
+      <table class="padding">
+        <tr>
+          <td>User ID</td>
+          <td>{{ .User.UserId }}</td>
+        </tr>
+        <tr>
+          <td>Created at</td>
+          <td>
+            <time datetime="{{ .User.CreatedAt }}"
+              >{{ .User.CreatedAt | date "2006-01-02 15:04:05" }}</time
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>Invited by</td>
+          <td>
+            {{ if .InvitedByUser }}
+              <a href="/admin/users/{{ .InvitedByUser.UserId }}" class="link"
+                >{{ .InvitedByUser.Username }}</a
+              >
+            {{ else }}
+              -
+            {{ end }}
+          </td>
+        </tr>
+      </table>
+    </div>
 
     <section class="v gap-01">
       <header class="h gap-fill">

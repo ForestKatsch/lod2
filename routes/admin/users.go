@@ -48,10 +48,20 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page.Render(w, r, "admin/users/user/index.html", map[string]interface{}{
+	data := map[string]interface{}{
 		"User":     user,
 		"Sessions": sessions,
-	})
+	}
+
+	if user.InvitedByUserId != nil {
+		invitedByUser, err := auth.AdminGetUserById(*user.InvitedByUserId)
+
+		if err == nil {
+			data["InvitedByUser"] = invitedByUser
+		}
+	}
+
+	page.Render(w, r, "admin/users/user/index.html", data)
 }
 
 func postUserEndAllSessions(w http.ResponseWriter, r *http.Request) {
