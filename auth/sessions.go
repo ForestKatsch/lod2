@@ -47,17 +47,22 @@ func updateUserSessionRefresh(sessionId string) error {
 }
 
 // Returns true if the session exists and is not expired.
-func getUserSessionIsValid(sessionId string) bool {
+func getUserSessionId(sessionId string) (string, bool) {
+	var userId string
 	var expiresAt int64
 
-	err := db.DB.QueryRow("SELECT expiresAt FROM authSessions WHERE sessionId = ? AND expiresAt > ?", sessionId, time.Now().Unix()).Scan(&expiresAt)
+	err := db.DB.QueryRow("SELECT userId, expiresAt FROM authSessions WHERE sessionId = ? AND expiresAt > ?", sessionId, time.Now().Unix()).Scan(&userId, &expiresAt)
 
 	if err != nil {
 		log.Println("error getting session:", err)
-		return false
+		return "", false
 	}
 
-	return expiresAt > time.Now().Unix()
+	if expiresAt <= time.Now().Unix() {
+		return "", false
+	}
+
+	return userId, true
 }
 
 // Attempts to invalidate the user session by setting the expiration time to now.

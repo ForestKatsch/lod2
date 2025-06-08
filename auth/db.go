@@ -40,11 +40,12 @@ func migrateAuth(tx *sql.Tx, version int) (int, error) {
 
 		tx.Exec(`
 			CREATE TABLE authSessions (
-				sessionId TEXT PRIMARY KEY NOT NULL UNIQUE,
-				userId TEXT NOT NULL UNIQUE,
+				sessionId TEXT NOT NULL,
+				userId TEXT NOT NULL,
 				issuedAt INTEGER NOT NULL,
 				refreshedAt INTEGER NOT NULL,
-				expiresAt INTEGER NOT NULL
+				expiresAt INTEGER NOT NULL,
+		  	PRIMARY KEY (sessionId, userId)
 			) WITHOUT ROWID`)
 
 		version = 2
