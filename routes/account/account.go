@@ -16,6 +16,7 @@ func Router() chi.Router {
 		page.Render(w, r, "account/index.html", map[string]interface{}{})
 	})
 
+	r.Get("/invite-link", getInviteLinkFragment)
 	r.Get("/change-password", getChangePassword)
 	r.Post("/change-password", postChangePassword)
 

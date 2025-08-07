@@ -61,6 +61,23 @@ func AdminSetRemainingInvites(userId string, remainingInvites int) error {
 	return nil
 }
 
+// Returns the invite code for the specified user, or an error if not found
+func GetUserInviteId(userId string) (string, error) {
+	var inviteId string
+
+	err := db.DB.QueryRow(`
+		SELECT inviteId
+		FROM authInvites
+		WHERE userId = ?`, userId).Scan(&inviteId)
+
+	if err != nil {
+		log.Println("error selecting invite code:", err)
+		return "", err
+	}
+
+	return inviteId, nil
+}
+
 func invitesConsumed(userId string) (int, error) {
 	var invitesConsumed int
 

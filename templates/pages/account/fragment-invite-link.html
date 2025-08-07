@@ -1,0 +1,15 @@
+<div class="h gap-1">
+  <button
+    class="link"
+    onClick="copyToClipboard({{ .InviteUrl }}, 'Copied invite link')"
+  >
+    Copy URL
+  </button>
+  <input
+    id="invite-url-link"
+    class="flex-1"
+    type="url"
+    value="{{ .InviteUrl }}"
+    disabled
+  />
+</div>

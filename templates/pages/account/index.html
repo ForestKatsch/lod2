@@ -8,8 +8,15 @@
     </header>
     <a class="link" href="/account/change-password">Change password</a>
     <hr />
-    Hello, {{ .Meta.User.Username }}! You are logged in.
-    <a class="link" href="/admin/">Administrator settings</a>
+    <a class="link" hx-get="/account/invite-link" hx-swap="outerHTML"
+      >Share invite link</a
+    >
+    <hr />
+
+    <div class="v paper padding-1 gap-1">
+      Hello, {{ .Meta.User.Username }}! You are logged in.
+      <a class="link" href="/admin/">Administrator settings</a>
+    </div>
   </section>
 {{ end }}
 

@@ -180,6 +180,10 @@ body {
   align-self: stretch;
 }
 
+.flex-1 {
+  flex: 1;
+}
+
 /* paper */
 .paper {
   outline: 1px solid var(--fg);
@@ -419,6 +423,32 @@ table {
   font-weight: bold;
   pointer-events: none;
   z-index: 1000;
+}
+
+/*** GLOBALS (toasts) */
+.toast {
+  position: fixed;
+  top: 0.5rem;
+  right: 0.5rem;
+  transform: translateY(-0.2rem);
+  opacity: 0;
+  padding: var(--padding);
+  z-index: 1200;
+
+  background-color: var(--fg);
+  color: var(--bg);
+
+  transition:
+    opacity 1.5s ease-in-out,
+    transform 1.5s ease-in-out;
+
+  pointer-events: none;
+
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition-duration: 0.3s;
+  }
 }
 
 /* single-column */
