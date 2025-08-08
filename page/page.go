@@ -28,6 +28,21 @@ func dynamicFuncs() template.FuncMap {
 	// Get Sprig's default functions
 	funcs := sprig.FuncMap()
 
+	funcs["hasRole"] = func(user *auth.UserInfo, scopeName string, levelName string) bool {
+		if user == nil {
+			return false
+		}
+		scope, ok := auth.NameToAccessScope[scopeName]
+		if !ok {
+			return false
+		}
+		level, ok := auth.NameToAccessLevel[levelName]
+		if !ok {
+			return false
+		}
+		return auth.UserHasRole(user.Roles, scope, level)
+	}
+
 	return funcs
 }
 
@@ -107,6 +122,7 @@ type MetaData struct {
 	Referrer string
 	Now      time.Time
 	User     *auth.UserInfo
+	Roles    []auth.Role
 }
 
 // renders a single template
@@ -125,8 +141,14 @@ func Render(w http.ResponseWriter, r *http.Request, path string, data map[string
 	}
 
 	meta.User = auth.GetCurrentUserInfo(r.Context())
-
+	if meta.User != nil {
+		meta.Roles = meta.User.Roles
+	}
 	pageData["Meta"] = meta
+	pageData["Const"] = map[string]interface{}{
+		"AccessLevelNames": auth.AccessLevelToName,
+		"AccessScopeNames": auth.AccessScopeToName,
+	}
 
 	err = templ.ExecuteTemplate(w, path, pageData)
 

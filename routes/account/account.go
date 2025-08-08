@@ -1,6 +1,7 @@
 package account
 
 import (
+	"lod2/auth"
 	"lod2/middleware"
 	"lod2/page"
 	"net/http"
@@ -13,7 +14,10 @@ func Router() chi.Router {
 	r.Use(middleware.AuthRequiredMiddleware())
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		page.Render(w, r, "account/index.html", map[string]interface{}{})
+		userInfo := auth.GetCurrentUserInfo(r.Context())
+		page.Render(w, r, "account/index.html", map[string]interface{}{
+			"User": userInfo,
+		})
 	})
 
 	r.Get("/invite-link", getInviteLinkFragment)

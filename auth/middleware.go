@@ -7,6 +7,7 @@ const UserInfoContextKey = "userInfo"
 type UserInfo struct {
 	UserId   string
 	Username string
+	Roles    []Role
 }
 
 func GetCurrentUserInfo(ctx context.Context) *UserInfo {

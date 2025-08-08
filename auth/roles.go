@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"database/sql"
 	"lod2/db"
 )
@@ -17,6 +18,18 @@ const (
 	AccessLevelEdit
 )
 
+var NameToAccessLevel = map[string]AccessLevel{
+	"None": AccessLevelNone,
+	"View": AccessLevelView,
+	"Edit": AccessLevelEdit,
+}
+
+var AccessLevelToName = map[AccessLevel]string{
+	AccessLevelNone: "None",
+	AccessLevelView: "View",
+	AccessLevelEdit: "Edit",
+}
+
 // AccessScope indicates what area the access applies to.
 type AccessScope int
 
@@ -24,6 +37,19 @@ const (
 	AccessScopeUserManagement AccessScope = iota
 	AccessScopeDangerousSql
 )
+
+var NameToAccessScope = map[string]AccessScope{
+	"UserManagement": AccessScopeUserManagement,
+	"DangerousSql":   AccessScopeDangerousSql,
+}
+
+var AccessScopeToName = make(map[AccessScope]string)
+
+func init() {
+	for name, scope := range NameToAccessScope {
+		AccessScopeToName[scope] = name
+	}
+}
 
 // Role is a combination of a level and a scope.
 type Role struct {
@@ -42,27 +68,17 @@ var AllRoles = []Role{
 }
 
 func GetScopeName(scope AccessScope) string {
-	switch scope {
-	case AccessScopeUserManagement:
-		return "User Management"
-	case AccessScopeDangerousSql:
-		return "Dangerous SQL"
-	default:
-		return "(unknown scope)"
+	for name, s := range NameToAccessScope {
+		if s == scope {
+			return name
+		}
 	}
+
+	return "(unknown scope)"
 }
 
 func GetLevelName(level AccessLevel) string {
-	switch level {
-	case AccessLevelEdit:
-		return "Edit"
-	case AccessLevelView:
-		return "View"
-	case AccessLevelNone:
-		return "None"
-	default:
-		return "(unknown level)"
-	}
+	return AccessLevelToName[level]
 }
 
 func GetRoleString(role Role) RoleString {
@@ -114,4 +130,37 @@ func GetUserRoles(userId string) ([]Role, error) {
 		return nil, err
 	}
 	return roles, nil
+}
+
+// UserHasRole returns true if any role for the given scope meets or exceeds the provided minimum level.
+func UserHasRole(roles []Role, scope AccessScope, minimumLevel AccessLevel) bool {
+	for _, r := range roles {
+		if r.Scope == scope && r.Level >= minimumLevel {
+			return true
+		}
+	}
+	return false
+}
+
+// VerifyRole loads the current user from context and checks if they have the specified role requirement.
+// Returns true if authorized, false otherwise. If the user is not logged in, returns false.
+func VerifyRole(ctx context.Context, scope AccessScope, minimumLevel AccessLevel) bool {
+	userInfo := GetCurrentUserInfo(ctx)
+	if userInfo == nil {
+		return false
+	}
+
+	roles, err := GetUserRoles(userInfo.UserId)
+	if err != nil {
+		return false
+	}
+	return UserHasRole(roles, scope, minimumLevel)
+}
+
+func GetRoleMap(roles []Role) map[AccessScope]AccessLevel {
+	roleMap := make(map[AccessScope]AccessLevel)
+	for _, role := range roles {
+		roleMap[role.Scope] = role.Level
+	}
+	return roleMap
 }

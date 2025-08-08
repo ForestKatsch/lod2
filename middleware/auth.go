@@ -66,6 +66,15 @@ func validateAuth(w http.ResponseWriter, r *http.Request) context.Context {
 		return r.Context()
 	}
 	userInfo.UserId = subject
+	roles, err := auth.GetUserRoles(subject)
+
+	if err != nil {
+		log.Printf("error getting roles for user %s: %v", subject, err)
+		auth.SignOut(w, r)
+		return r.Context()
+	}
+
+	userInfo.Roles = roles
 
 	ctx := context.WithValue(r.Context(), auth.UserInfoContextKey, userInfo)
 
