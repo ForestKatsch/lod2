@@ -73,6 +73,36 @@ func migrateAuth(tx *sql.Tx, version int) (int, error) {
 		version = 5
 	}
 
+	// 6: refactor roles to level/scope instead of single role integer
+	if version < 6 {
+		// Create the new table schema
+		tx.Exec(`
+			CREATE TABLE authRoles_new (
+				userId TEXT NOT NULL FOREIGN KEY REFERENCES authUsers(userId),
+				level INTEGER NOT NULL,
+				scope INTEGER NOT NULL
+			) WITHOUT ROWID`)
+
+		// Migrate old role values into level/scope pairs
+		// Old mapping:
+		//  0 (RoleUserEdit)   -> level=2 (Edit), scope=0 (UserManagement)
+		//  1 (RoleUserView)   -> level=1 (View), scope=0 (UserManagement)
+		//  2 (RoleDirectSql)  -> level=2 (Edit), scope=1 (DangerousSql)
+		tx.Exec(`
+			INSERT INTO authRoles_new (userId, level, scope)
+			SELECT
+				userId,
+				CASE role WHEN 0 THEN 2 WHEN 1 THEN 1 WHEN 2 THEN 2 ELSE 0 END AS level,
+				CASE role WHEN 0 THEN 0 WHEN 1 THEN 0 WHEN 2 THEN 1 ELSE 0 END AS scope
+			FROM authRoles`)
+
+		// Replace old table
+		tx.Exec(`DROP TABLE authRoles`)
+		tx.Exec(`ALTER TABLE authRoles_new RENAME TO authRoles`)
+
+		version = 6
+	}
+
 	userId, _ := createUser(tx, "admin", "admin", AllRoles)
 	log.Printf("created admin user with ID %s", userId)
 

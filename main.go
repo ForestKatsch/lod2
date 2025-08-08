@@ -23,7 +23,7 @@ import (
 )
 
 func main() {
-	config.Init()
+	config.Init(true)
 	db.Init()
 	auth.Init()
 

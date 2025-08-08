@@ -2,39 +2,71 @@ package auth
 
 import "database/sql"
 
-type Role int
+// AccessLevel indicates the action capability within a scope.
+type AccessLevel int
 
 const (
-	RoleUserEdit Role = iota
-	RoleUserView
-
-	RoleDirectSql
+	// No access to this scope
+	AccessLevelNone AccessLevel = iota
+	// View-only access
+	AccessLevelView
+	// View and edit access
+	AccessLevelEdit
 )
 
-var AllRoles = []Role{RoleUserEdit, RoleUserView, RoleDirectSql}
+// AccessScope indicates what area the access applies to.
+type AccessScope int
+
+const (
+	AccessScopeUserManagement AccessScope = iota
+	AccessScopeDangerousSql
+)
+
+// Role is a combination of a level and a scope.
+type Role struct {
+	Level AccessLevel
+	Scope AccessScope
+}
+
+var AllRoles = []Role{
+	{Level: AccessLevelEdit, Scope: AccessScopeUserManagement},
+	{Level: AccessLevelView, Scope: AccessScopeUserManagement},
+	{Level: AccessLevelEdit, Scope: AccessScopeDangerousSql},
+}
 
 func GetRoleName(r Role) string {
-	switch r {
-	case RoleUserEdit:
-		return "User Edit"
-	case RoleUserView:
-		return "User View"
-
-	case RoleDirectSql:
-		return "Direct SQL"
-
+	scope := ""
+	switch r.Scope {
+	case AccessScopeUserManagement:
+		scope = "User Management"
+	case AccessScopeDangerousSql:
+		scope = "Dangerous SQL"
 	default:
-		return "(not a group)"
+		scope = "(unknown scope)"
 	}
+
+	level := ""
+	switch r.Level {
+	case AccessLevelEdit:
+		level = "Edit"
+	case AccessLevelView:
+		level = "View"
+	case AccessLevelNone:
+		level = "None"
+	default:
+		level = "(unknown level)"
+	}
+
+	return scope + ": " + level
 }
 
 // authRoles contains
 // userId - foreign key to authUsers
-// role - the role ID
-
+// level - the access level
+// scope - the access scope
 func addRoles(tx *sql.Tx, userId string, roles []Role) error {
 	for _, role := range roles {
-		if _, err := tx.Exec(`INSERT INTO authRoles (userId, role) VALUES (?, ?)`, userId, role); err != nil {
+		if _, err := tx.Exec(`INSERT INTO authRoles (userId, level, scope) VALUES (?, ?, ?)`, userId, role.Level, role.Scope); err != nil {
 			return err
 		}
 	}
