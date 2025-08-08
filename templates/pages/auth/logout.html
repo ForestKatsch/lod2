@@ -1,25 +1,20 @@
 {{ define "title" }}Logout{{ end }}
 
 {{ define "meta" }}
-  <link rel="stylesheet" href="/static/styles/page/auth.css" />
+<link rel="stylesheet" href="/static/styles/page/auth.css" />
 {{ end }}
 
 {{ define "content" }}
-  <div class="auth-box v gap-1 paper padding-1">
-    <h1>Logout</h1>
-    <div class="alert">Do you <em>really</em> want to leave?</div>
-    <div class="h gap-fill">
-      <a
-        href="{{ .Meta.Referrer }}"
-        hx-on::click="history.back()"
-        class="link contrast-medium"
-        >Go back</a
-      >
-      <a href="/auth/logout/confirm" class="button contrast-medium"
-        >Yes, logout</a
-      >
-    </div>
+<div class="auth-box v gap-1 paper padding-1">
+  <h1>Logout</h1>
+  <div class="alert">Do you <em>really</em> want to leave?</div>
+  <div class="h gap-fill">
+    <a href="{{ .Meta.Referrer }}" hx-on::click="history.back()" class="link contrast-medium">Go back</a>
+    <form method="post" action="/auth/logout/confirm">
+      <button type="submit" class="button contrast-medium">Yes, logout</button>
+    </form>
   </div>
+</div>
 {{ end }}
 
 {{ template "layout/main.html" . }}

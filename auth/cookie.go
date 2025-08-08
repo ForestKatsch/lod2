@@ -12,7 +12,7 @@ func SetCookie(w http.ResponseWriter, name, value string, duration time.Duration
 		Value:    value,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 		SameSite: http.SameSiteStrictMode,
 		Expires:  time.Now().Add(duration),
 	})
@@ -32,19 +32,21 @@ func tryInvalidateSession(w http.ResponseWriter, r *http.Request) {
 	refreshTokenCookie, refreshErr := r.Cookie(RefreshTokenCookieName)
 
 	if refreshErr != nil || refreshTokenCookie == nil || refreshTokenCookie.Value == "" {
+		log.Println("no refresh token cookie found")
 		return
 	}
 
 	refreshToken, err := ParseToken(refreshTokenCookie.Value)
 
 	if err != nil {
+		log.Println("error parsing refresh token cookie")
 		return
 	}
 
-	var sessionId string
-	refreshToken.Get("sid", &sessionId)
+	sessionId, ok := refreshToken.Subject()
 
-	if sessionId == "" {
+	if !ok {
+		log.Println("no session id found in refresh token")
 		return
 	}
 

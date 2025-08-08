@@ -67,6 +67,7 @@ func postLogin(w http.ResponseWriter, r *http.Request) {
 	auth.SetCookie(w, auth.RefreshTokenCookieName, refreshTokenString, auth.RefreshTokenExpirationDuration)
 	auth.SetCookie(w, auth.AccessTokenCookieName, accessTokenString, auth.AccessTokenExpirationDuration)
 
+	log.Printf("sign-in successful, redirecting to %s", next)
 	http.Redirect(w, r, next, http.StatusSeeOther)
 	return
 }

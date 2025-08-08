@@ -12,7 +12,7 @@ func Router() chi.Router {
 	r.Post("/login", postLogin)
 
 	r.Get("/logout", getLogout)
-	r.Get("/logout/confirm", getLogoutConfirm)
+	r.Post("/logout/confirm", postLogoutConfirm)
 
 	return r
 }

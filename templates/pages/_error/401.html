@@ -1,6 +1,10 @@
 {{ define "content" }}
 <h1>401: NOT AUTHORIZED</h1>
+{{ if .Meta.User }}
+<p>You are logged in as {{ .Meta.User.Username }} but do not have permission to access this page.</p>
+{{ else }}
 <a class="button contrast-medium" href="/auth/login">Login</a>
+{{ end }}
 {{ end }}
 
 {{ define "meta" }}

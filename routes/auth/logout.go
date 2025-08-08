@@ -14,7 +14,7 @@ func getLogout(w http.ResponseWriter, r *http.Request) {
 	page.Render(w, r, "auth/logout.html", nil)
 }
 
-func getLogoutConfirm(w http.ResponseWriter, r *http.Request) {
+func postLogoutConfirm(w http.ResponseWriter, r *http.Request) {
 	if auth.IsUserLoggedIn(r.Context()) {
 		auth.SignOut(w, r)
 	}

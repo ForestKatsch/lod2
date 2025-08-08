@@ -55,7 +55,7 @@ func loadFromFile(rootTemplate *template.Template, name string, filename string)
 		log.Printf("! unable to read file '%v': %v", filename, err)
 	}
 
-	log.Printf("parsing template '%v'...", filename)
+	// log.Printf("parsing template '%v'...", filename)
 	newTemplate := template.Must(rootTemplate.New(name).Parse(string(file)))
 
 	return newTemplate
