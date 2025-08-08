@@ -49,7 +49,7 @@ func Migrate(name string, migrateFunc MigrateFunc) error {
 	newVersion, err := migrateFunc(tx, version)
 
 	if err != nil {
-		log.Printf("failed to migrate %s: %v", name, err)
+		log.Printf("failed to migrate %s during migration to %d: %v", name, newVersion+1, err)
 		return err
 	}
 

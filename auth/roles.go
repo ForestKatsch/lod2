@@ -1,6 +1,9 @@
 package auth
 
-import "database/sql"
+import (
+	"database/sql"
+	"lod2/db"
+)
 
 // AccessLevel indicates the action capability within a scope.
 type AccessLevel int
@@ -66,9 +69,32 @@ func GetRoleName(r Role) string {
 // scope - the access scope
 func addRoles(tx *sql.Tx, userId string, roles []Role) error {
 	for _, role := range roles {
-		if _, err := tx.Exec(`INSERT INTO authRoles (userId, level, scope) VALUES (?, ?, ?)`, userId, role.Level, role.Scope); err != nil {
+		if _, err := tx.Exec(`INSERT OR REPLACE INTO authRoles (userId, level, scope) VALUES (?, ?, ?)`, userId, role.Level, role.Scope); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// GetUserRoles returns all roles assigned to the given user.
+func GetUserRoles(userId string) ([]Role, error) {
+	rows, err := db.DB.Query(`SELECT level, scope FROM authRoles WHERE userId = ?`, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	roles := make([]Role, 0)
+	for rows.Next() {
+		var level int
+		var scope int
+		if err := rows.Scan(&level, &scope); err != nil {
+			return nil, err
+		}
+		roles = append(roles, Role{Level: AccessLevel(level), Scope: AccessScope(scope)})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return roles, nil
 }
