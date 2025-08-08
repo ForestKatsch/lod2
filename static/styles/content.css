@@ -16,14 +16,15 @@
     font-weight: bold;
   }
 
-  header {
-    border-bottom: 1px dashed var(--fg);
-    padding-bottom: 0.5rem;
-  }
-
   hr {
     margin: 0;
     border-bottom: 1px dashed var(--fg);
+  }
+
+  > header {
+    border-bottom: 1px dashed var(--fg);
+    margin-bottom: var(--unit);
+    padding-bottom: var(--unit);
   }
 
   strong {

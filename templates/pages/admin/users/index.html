@@ -1,27 +1,30 @@
 {{ define "title" }}User management{{ end }}
 
 {{ define "meta" }}
-  <style>
-    #_user_table {
-      .username {
-        width: 100%;
-      }
-      th {
-        white-space: nowrap;
-      }
+<style>
+  #_user_table {
+    .username {
+      width: 100%;
     }
-  </style>
+
+    th {
+      white-space: nowrap;
+    }
+  }
+</style>
 {{ end }}
 
 {{ define "content" }}
-  <section class="v gap-1">
-    <header class="h">
-      <nav class="breadcrumbs">
-        <a href="/admin">Admin</a>
-        <a href="/admin/users">User management</a>
-      </nav>
-    </header>
-    <table id="_user_table" class="paper data padding">
+<header class="h">
+  <nav class="breadcrumbs">
+    <a href="/admin">Admin</a>
+    <a href="/admin/users">User management</a>
+  </nav>
+</header>
+
+<section class="v gap-2">
+  <div class="v paper table_container">
+    <table id="_user_table" class="data padding">
       <thead>
         <tr>
           <th class="username">Username</th>
@@ -33,61 +36,47 @@
       </thead>
       <tbody>
         {{ range .Users }}
-          <tr>
-            <td class="username">
-              <strong>
-                <a href="/admin/users/{{ .UserId }}" class="link"
-                  >{{ .Username }}</a
-                >
-              </strong>
-            </td>
-            <td>
-              <time datetime="{{ .LastLogin }}"
-                >{{ .LastLogin | ago }} ago</time
-              >
-            </td>
-            <td>
-              <time datetime="{{ .LastActivity }}"
-                >{{ .LastActivity | ago }} ago</time
-              >
-            </td>
-            <td>
-              <span class="session-count">{{ .SessionCount }}</span>
-              <button
-                class="link"
-                hx-post="/admin/users/{{ .UserId }}/end-all-sessions"
-                hx-confirm="End all sessions and require '{{ .Username }}' to login again? It may take a few minutes until all sessions are ended."
-                hx-target="previous .session-count"
-              >
-                End all
-              </button>
-            </td>
-            <td>
-              <span class="invites-remaining">{{ .InvitesRemaining }}</span>
-              <button
-                class="link"
-                hx-post="/admin/users/{{ .UserId }}/reset-invites?to=5"
-                hx-target="previous .invites-remaining"
-              >
-                Refill
-              </button>
-              /
-              <button
-                class="link"
-                hx-post="/admin/users/{{ .UserId }}/reset-invites"
-                hx-target="previous .invites-remaining"
-              >
-                Clear
-              </button>
-            </td>
-          </tr>
+        <tr>
+          <td class="username">
+            <strong>
+              <a href="/admin/users/{{ .UserId }}" class="link">{{ .Username }}</a>
+            </strong>
+          </td>
+          <td>
+            <time datetime="{{ .LastLogin }}">{{ .LastLogin | ago }} ago</time>
+          </td>
+          <td>
+            <time datetime="{{ .LastActivity }}">{{ .LastActivity | ago }} ago</time>
+          </td>
+          <td>
+            <span class="session-count">{{ .SessionCount }}</span>
+            <button class="link" hx-post="/admin/users/{{ .UserId }}/end-all-sessions"
+              hx-confirm="End all sessions and require '{{ .Username }}' to login again? It may take a few minutes until all sessions are ended."
+              hx-target="previous .session-count">
+              End all
+            </button>
+          </td>
+          <td>
+            <span class="invites-remaining">{{ .InvitesRemaining }}</span>
+            <button class="link" hx-post="/admin/users/{{ .UserId }}/reset-invites?to=5"
+              hx-target="previous .invites-remaining">
+              Refill
+            </button>
+            /
+            <button class="link" hx-post="/admin/users/{{ .UserId }}/reset-invites"
+              hx-target="previous .invites-remaining">
+              Clear
+            </button>
+          </td>
+        </tr>
         {{ end }}
       </tbody>
     </table>
-    <div class="h justify-end">
-      <a class="button contrast-medium" href="/admin/invite">Invite</a>
-    </div>
-  </section>
+  </div>
+  <div class="h justify-end">
+    <a class="button contrast-medium" href="/admin/invite">Invite</a>
+  </div>
+</section>
 {{ end }}
 
 {{ template "layout/main.html" . }}

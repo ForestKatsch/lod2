@@ -31,35 +31,53 @@ type Role struct {
 	Scope AccessScope
 }
 
+type RoleString struct {
+	Scope string
+	Level string
+}
+
 var AllRoles = []Role{
 	{Level: AccessLevelEdit, Scope: AccessScopeUserManagement},
 	{Level: AccessLevelEdit, Scope: AccessScopeDangerousSql},
 }
 
-func GetRoleName(r Role) string {
-	scope := ""
-	switch r.Scope {
+func GetScopeName(scope AccessScope) string {
+	switch scope {
 	case AccessScopeUserManagement:
-		scope = "User Management"
+		return "User Management"
 	case AccessScopeDangerousSql:
-		scope = "Dangerous SQL"
+		return "Dangerous SQL"
 	default:
-		scope = "(unknown scope)"
+		return "(unknown scope)"
 	}
+}
 
-	level := ""
-	switch r.Level {
+func GetLevelName(level AccessLevel) string {
+	switch level {
 	case AccessLevelEdit:
-		level = "Edit"
+		return "Edit"
 	case AccessLevelView:
-		level = "View"
+		return "View"
 	case AccessLevelNone:
-		level = "None"
+		return "None"
 	default:
-		level = "(unknown level)"
+		return "(unknown level)"
 	}
+}
 
-	return scope + ": " + level
+func GetRoleString(role Role) RoleString {
+	return RoleString{
+		Scope: GetScopeName(role.Scope),
+		Level: GetLevelName(role.Level),
+	}
+}
+
+func GetRoleStrings(roles []Role) []RoleString {
+	roleStrings := make([]RoleString, 0, len(roles))
+	for _, role := range roles {
+		roleStrings = append(roleStrings, GetRoleString(role))
+	}
+	return roleStrings
 }
 
 // authRoles contains

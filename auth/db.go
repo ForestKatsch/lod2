@@ -68,12 +68,6 @@ func migrateAuth(tx *sql.Tx, version int) (int, error) {
 			return version, err
 		}
 
-		userId, err := createUser(tx, "admin", "admin", AllRoles)
-		if err != nil {
-			return version, err
-		}
-		log.Printf("created admin user with ID %s", userId)
-
 		version = 5
 	}
 
@@ -94,12 +88,22 @@ func migrateAuth(tx *sql.Tx, version int) (int, error) {
 		version = 7
 	}
 
+	if version < 8 {
+		userId, err := createUser(tx, "admin", "admin", AllRoles)
+		if err != nil {
+			return version, err
+		}
+		log.Printf("created admin user with ID %s", userId)
+
+		version = 8
+	}
+
+	// Sneakily always update the admin user to have all roles. This runs at every boot and makes sure the admin user has all roles even if additional scopes are added.
 	userId, err := AdminGetUserIdByUsername(tx, "admin")
 	if err != nil {
 		return version, err
 	}
 
-	// Sneakily always update the admin user to have all roles. This runs at every boot and makes sure the admin user has all roles even if additional scopes are added.
 	if err := addRoles(tx, userId, AllRoles); err != nil {
 		return version, err
 	}

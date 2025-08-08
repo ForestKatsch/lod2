@@ -61,6 +61,9 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Add this on to do string handling in the backend instead of the template.
+	data["UserRoleStrings"] = auth.GetRoleStrings(user.Roles)
+
 	page.Render(w, r, "admin/users/user/index.html", data)
 }
 

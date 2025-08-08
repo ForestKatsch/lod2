@@ -3,7 +3,6 @@ package auth
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"time"
 
 	"lod2/db"
@@ -141,6 +140,7 @@ type UserSessionInfo struct {
 	SessionCount     int
 	InvitesRemaining int
 	InvitedByUserId  *string
+	Roles            []Role
 }
 
 func AdminGetAllUsers() ([]UserSessionInfo, error) {
@@ -227,34 +227,26 @@ func AdminGetUserIdByUsername(tx *sql.Tx, username string) (string, error) {
 
 func AdminGetUserById(userId string) (UserSessionInfo, error) {
 	row := db.DB.QueryRow(`
-		WITH userTable AS (
-			SELECT
-				authUsers.userId,
-				authUsers.userName,
-				max(authSessions.issuedAt) as lastLogin,
-				authUsers.createdAt,
-				count(authSessions.expiresAt < ?) as sessionCount,
-				COALESCE(SUM(inviteLimit), 0) - COUNT(authUsers.inviteId) as invitesRemaining,
-				authUsers.inviteId
-			FROM authUsers
-			LEFT JOIN authSessions ON authUsers.userId = authSessions.userId
-			LEFT JOIN authInvites ON authInvites.userId = authUsers.userId
-			WHERE authUsers.userId = ?
-		)
-		SELECT
-			u.userId,
-			u.userName,
-			u.lastLogin,
-			u.createdAt,
-			u.sessionCount,
-			u.invitesRemaining,
-			authInvites.userId as invitedByUserId
-		FROM userTable as u
-		LEFT JOIN authInvites ON authInvites.inviteId = u.inviteId`, time.Now().Unix(), userId)
-
-	if row == nil {
-		return UserSessionInfo{}, errors.New("invalid user id")
-	}
+        WITH invite_totals AS (
+            SELECT userId, SUM(inviteLimit) AS inviteLimitTotal
+            FROM authInvites
+            GROUP BY userId
+        )
+        SELECT
+            u.userId,
+            u.userName,
+            COALESCE(MAX(s.issuedAt), 0) AS lastLogin,
+            u.createdAt,
+            COALESCE(COUNT(CASE WHEN s.expiresAt > ? THEN 1 END), 0) AS sessionCount,
+            COALESCE(it.inviteLimitTotal, 0) - COUNT(u.inviteId) AS invitesRemaining,
+            i.userId AS invitedByUserId
+        FROM authUsers AS u
+        LEFT JOIN authSessions AS s ON u.userId = s.userId
+        LEFT JOIN invite_totals AS it ON it.userId = u.userId
+        LEFT JOIN authInvites AS i ON i.inviteId = u.inviteId
+        WHERE u.userId = ?
+        GROUP BY u.userId, u.userName, u.createdAt, it.inviteLimitTotal, i.userId
+    `, time.Now().Unix(), userId)
 
 	var userName string
 	var lastLogin int64
@@ -266,7 +258,15 @@ func AdminGetUserById(userId string) (UserSessionInfo, error) {
 	err := row.Scan(&userId, &userName, &lastLogin, &createdAt, &sessionCount, &invitesRemaining, &invitedByUserId)
 
 	if err != nil {
-		log.Printf("oops, %s", err)
+		if err == sql.ErrNoRows {
+			return UserSessionInfo{}, errors.New("invalid user id")
+		}
+		return UserSessionInfo{}, err
+	}
+
+	// Fetch and map roles for this user
+	roles, err := GetUserRoles(userId)
+	if err != nil {
 		return UserSessionInfo{}, err
 	}
 
@@ -278,5 +278,6 @@ func AdminGetUserById(userId string) (UserSessionInfo, error) {
 		SessionCount:     sessionCount,
 		InvitesRemaining: invitesRemaining,
 		InvitedByUserId:  invitedByUserId,
+		Roles:            roles,
 	}, nil
 }
