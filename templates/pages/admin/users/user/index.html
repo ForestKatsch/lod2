@@ -1,104 +1,122 @@
 {{ define "title" }}Manage user: {{ .User.Username }}{{ end }}
 
 {{ define "content" }}
-<header class="h">
-  <nav class="breadcrumbs">
-    <a href="/admin">Admin</a>
-    <a href="/admin/users">User management</a>
-    <a href="/admin/users/{{ .User.UserId }}">{{ .User.Username }}</a>
-  </nav>
-</header>
+  <header class="h">
+    <nav class="breadcrumbs">
+      <a href="/admin">Admin</a>
+      <a href="/admin/users">User management</a>
+      <a href="/admin/users/{{ .User.UserId }}">{{ .User.Username }}</a>
+    </nav>
+  </header>
 
-<section class="v gap-2">
-
-  <div class="v paper table_container">
-    <table class="padding">
-      <tr>
-        <td>User ID</td>
-        <td>{{ .User.UserId }}</td>
-      </tr>
-      <tr>
-        <td>Created at</td>
-        <td>
-          <time datetime="{{ .User.CreatedAt }}">{{ .User.CreatedAt | date "2006-01-02 15:04:05" }}</time>
-        </td>
-      </tr>
-      <tr>
-        <td>Invited by</td>
-        <td>
-          {{ if .InvitedByUser }}
-          <a href="/admin/users/{{ .InvitedByUser.UserId }}" class="link">{{ .InvitedByUser.Username }}</a>
-          {{ else }}
-          -
-          {{ end }}
-        </td>
-      </tr>
-    </table>
-  </div>
-
-  <section class="v gap-01">
-    <header class="h gap-fill">
-      <h3>Roles</h3>
-    </header>
+  <section class="v gap-2">
     <div class="v paper table_container">
       <table class="padding">
-        <tbody>
-          {{ range .UserRoleStrings }}
-          <tr>
-            <td>{{ .Scope }}</td>
-            <td><strong>{{ .Level }}</strong></td>
-          </tr>
-          {{ end }}
-        </tbody>
+        <tr>
+          <td>User ID</td>
+          <td>{{ .User.UserId }}</td>
+        </tr>
+        <tr>
+          <td>Created at</td>
+          <td>
+            <time datetime="{{ .User.CreatedAt }}"
+              >{{ .User.CreatedAt | date "2006-01-02 15:04:05" }}</time
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>Invited by</td>
+          <td>
+            {{ if .InvitedByUser }}
+              <a href="/admin/users/{{ .InvitedByUser.UserId }}" class="link"
+                >{{ .InvitedByUser.Username }}</a
+              >
+            {{ else }}
+              -
+            {{ end }}
+          </td>
+        </tr>
       </table>
     </div>
-  </section>
 
-  <section class="v gap-01">
-    <header class="h gap-fill">
-      <h3>Sessions</h3>
-      <button class="button contrast-medium" hx-post="/admin/users/{{ .User.UserId }}/end-all-sessions"
-        hx-confirm="End all sessions and require '{{ .User.Username }}' to login again? It may take a few minutes until all sessions are ended.">
-        End all
-      </button>
-    </header>
-    <div class="v paper table_container">
-      <table class="data padding">
-        <thead>
-          <tr>
-            <th>Started at</th>
-            <th>Ends at</th>
-            <th>Last activity</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{ range .Sessions }}
-          <tr>
-            <td>
-              <time datetime="{{ .IssuedAt }}">{{ .IssuedAt | date "2006-01-02 15:04:05" }}</time>
-            </td>
-            <td>
-              <time datetime="{{ .ExpiresAt }}">
-                {{ if .Expired }}
-                Ended
-                {{ else }}
-                {{ .ExpiresAt | date "2006-01-02 15:04:05" }}
-                {{ end }}</time>
-            </td>
-            <td>
-              <time datetime="{{ .RefreshedAt }}">{{ if .Expired }}
-                N/A
-                {{ else }}
-                {{ .RefreshedAt | ago }} ago
-                {{ end }}</time>
-            </td>
-          </tr>
-          {{ end }}
-        </tbody>
-      </table>
-    </div>
+    <section class="v gap-01">
+      <header class="h gap-fill">
+        <h3>Roles</h3>
+      </header>
+      <div class="v paper table_container">
+        <table class="padding">
+          <tbody>
+            {{ range .UserRoleStrings }}
+              <tr>
+                <td>{{ .Scope }}</td>
+                <td><strong>{{ .Level }}</strong></td>
+              </tr>
+            {{ end }}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="v gap-01">
+      <header class="h gap-fill">
+        <h3>Sessions</h3>
+        <button
+          class="button contrast-medium"
+          hx-post="/admin/users/{{ .User.UserId }}/end-all-sessions"
+          hx-confirm="End all sessions and require '{{ .User.Username }}' to login again? It may take a few minutes until all sessions are ended."
+        >
+          End all
+        </button>
+      </header>
+      <div class="v paper table_container">
+        <table class="data padding">
+          <thead>
+            <tr>
+              <th>Started at</th>
+              <th>Ends at</th>
+              <th>Last activity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{ range .Sessions }}
+              <tr>
+                <td>
+                  <time datetime="{{ .IssuedAt }}" title="{{ .IssuedAt | ago }}"
+                    >{{ .IssuedAt | date "2006-01-02 15:04:05" }}</time
+                  >
+                </td>
+                <td>
+                  <time
+                    datetime="{{ .ExpiresAt }}"
+                    title="{{ .ExpiresAt | ago }}"
+                  >
+                    {{ if .Expired }}
+                      Ended
+                    {{ else }}
+                      {{ .ExpiresAt | date "2006-01-02 15:04:05" }}
+                    {{ end }}</time
+                  >
+                </td>
+                <td>
+                  <time
+                    datetime="{{ .RefreshedAt }}"
+                    title="{{ .RefreshedAt | ago }}"
+                    >{{ if
+                      .Expired
+                    }}
+                      N/A
+                    {{ else }}
+                      {{ .RefreshedAt | date "2006-01-02 15:04:05" }}
+                    {{ end }}</time
+                  >
+                </td>
+              </tr>
+            {{ end }}
+          </tbody>
+        </table>
+      </div>
+    </section>
   </section>
-</section>
 {{ end }}
 
 {{ template "layout/main.html" . }}

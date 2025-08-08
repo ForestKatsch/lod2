@@ -1,4 +1,8 @@
-lod2
-_archive_bin
-tmp
-runtime_config
+/lod2
+/_archive_bin
+/tmp
+/runtime_config
+
+/node_modules
+/package-lock.json
+/package.json

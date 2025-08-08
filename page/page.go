@@ -144,7 +144,9 @@ func Render(w http.ResponseWriter, r *http.Request, path string, data map[string
 	if meta.User != nil {
 		meta.Roles = meta.User.Roles
 	}
+
 	pageData["Meta"] = meta
+
 	pageData["Const"] = map[string]interface{}{
 		"AccessLevelNames": auth.AccessLevelToName,
 		"AccessScopeNames": auth.AccessScopeToName,
