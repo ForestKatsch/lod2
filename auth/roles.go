@@ -33,7 +33,6 @@ type Role struct {
 
 var AllRoles = []Role{
 	{Level: AccessLevelEdit, Scope: AccessScopeUserManagement},
-	{Level: AccessLevelView, Scope: AccessScopeUserManagement},
 	{Level: AccessLevelEdit, Scope: AccessScopeDangerousSql},
 }
 
