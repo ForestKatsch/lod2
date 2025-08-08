@@ -20,22 +20,22 @@ func Router() chi.Router {
 		page.Render(w, r, "admin/index.html", map[string]interface{}{})
 	})
 
-	r.Post("/db/execute", func(w http.ResponseWriter, r *http.Request) {
+    r.Post("/db/execute", func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		query := r.Form.Get("query")
-		if query == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			page.Render(w, r, "admin/db/execute.html", map[string]interface{}{"Error": "query required"})
-			return
-		}
+        if query == "" {
+            w.WriteHeader(http.StatusBadRequest)
+            page.Render(w, r, "admin/db/fragment-execute.html", map[string]interface{}{"Error": "query required"})
+            return
+        }
 
 		rows, err := db.DB.Query(query)
 
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			page.Render(w, r, "admin/db/execute.html", map[string]interface{}{"Error": err.Error()})
-			return
-		}
+        if err != nil {
+            w.WriteHeader(http.StatusBadRequest)
+            page.Render(w, r, "admin/db/fragment-execute.html", map[string]interface{}{"Error": err.Error()})
+            return
+        }
 
 		defer rows.Close()
 		// The page itself has {{ range $index, $row := $.Rows }}
@@ -43,11 +43,11 @@ func Router() chi.Router {
 
 		columns, err := rows.Columns()
 
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			page.Render(w, r, "admin/db/execute.html", map[string]interface{}{"Error": err.Error()})
-			return
-		}
+        if err != nil {
+            w.WriteHeader(http.StatusBadRequest)
+            page.Render(w, r, "admin/db/fragment-execute.html", map[string]interface{}{"Error": err.Error()})
+            return
+        }
 
 		// Add data to be passed to the template
 		data := map[string]interface{}{
@@ -62,11 +62,11 @@ func Router() chi.Router {
 				columnPointers[i] = new(interface{})
 			}
 
-			if err := rows.Scan(columnPointers...); err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				page.Render(w, r, "admin/db/execute.html", map[string]interface{}{"Error": err.Error()})
-				return
-			}
+            if err := rows.Scan(columnPointers...); err != nil {
+                w.WriteHeader(http.StatusBadRequest)
+                page.Render(w, r, "admin/db/fragment-execute.html", map[string]interface{}{"Error": err.Error()})
+                return
+            }
 
 			for i, _ := range columns {
 				if val, ok := (*(columnPointers[i].(*interface{}))).(interface{ Valid() bool }); ok && !val.Valid() {
@@ -78,15 +78,15 @@ func Router() chi.Router {
 			data["Rows"] = append(data["Rows"].([]map[string]interface{}), columnMap)
 		}
 
-		if err := rows.Err(); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			page.Render(w, r, "admin/db/execute.html", map[string]interface{}{"Error": err.Error()})
-			return
-		}
+        if err := rows.Err(); err != nil {
+            w.WriteHeader(http.StatusBadRequest)
+            page.Render(w, r, "admin/db/fragment-execute.html", map[string]interface{}{"Error": err.Error()})
+            return
+        }
 
 		log.Printf("Rows: %d", len(data["Rows"].([]map[string]interface{})))
 
-		page.Render(w, r, "admin/db/execute.html", data)
+        page.Render(w, r, "admin/db/fragment-execute.html", data)
 	})
 
 	return r
