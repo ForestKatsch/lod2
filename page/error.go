@@ -8,7 +8,11 @@ import (
 func RenderError(w http.ResponseWriter, r *http.Request, err error) {
 	// TODO: use templating
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-	log.Print("rendering error: ", err)
+	log.Print("TODO rendering error: ", err)
+}
+
+func Render401(w http.ResponseWriter, r *http.Request) {
+	Render(w, r, "/_error/401.html", nil)
 }
 
 func NotFound(w http.ResponseWriter, r *http.Request) {

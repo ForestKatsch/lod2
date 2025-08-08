@@ -13,34 +13,34 @@ const (
 	// No access to this scope
 	AccessLevelNone AccessLevel = iota
 	// View-only access
-	AccessLevelView
+	View
 	// View and edit access
-	AccessLevelEdit
+	Edit
 )
 
 var NameToAccessLevel = map[string]AccessLevel{
 	"None": AccessLevelNone,
-	"View": AccessLevelView,
-	"Edit": AccessLevelEdit,
+	"View": View,
+	"Edit": Edit,
 }
 
 var AccessLevelToName = map[AccessLevel]string{
 	AccessLevelNone: "None",
-	AccessLevelView: "View",
-	AccessLevelEdit: "Edit",
+	View:            "View",
+	Edit:            "Edit",
 }
 
 // AccessScope indicates what area the access applies to.
 type AccessScope int
 
 const (
-	AccessScopeUserManagement AccessScope = iota
-	AccessScopeDangerousSql
+	UserManagement AccessScope = iota
+	DangerousSql
 )
 
 var NameToAccessScope = map[string]AccessScope{
-	"UserManagement": AccessScopeUserManagement,
-	"DangerousSql":   AccessScopeDangerousSql,
+	"UserManagement": UserManagement,
+	"DangerousSql":   DangerousSql,
 }
 
 var AccessScopeToName = make(map[AccessScope]string)
@@ -63,8 +63,8 @@ type RoleString struct {
 }
 
 var AllRoles = []Role{
-	{Level: AccessLevelEdit, Scope: AccessScopeUserManagement},
-	{Level: AccessLevelEdit, Scope: AccessScopeDangerousSql},
+	{Level: Edit, Scope: UserManagement},
+	{Level: Edit, Scope: DangerousSql},
 }
 
 func GetScopeName(scope AccessScope) string {

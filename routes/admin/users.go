@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"lod2/auth"
+	"lod2/middleware"
 	"lod2/page"
 	"net/http"
 	"strconv"
@@ -107,6 +108,7 @@ func postUserResetInvites(w http.ResponseWriter, r *http.Request) {
 
 func userRouter() chi.Router {
 	r := chi.NewRouter()
+	r.Use(middleware.AuthRoleRequiredMiddleware(auth.UserManagement))
 
 	r.Get("/", getUsers)
 

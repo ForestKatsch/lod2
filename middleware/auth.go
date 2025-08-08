@@ -95,7 +95,29 @@ func AuthRequiredMiddleware() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if !auth.IsUserLoggedIn(r.Context()) {
 				w.WriteHeader(http.StatusUnauthorized)
-				page.Render(w, r, "/_error/401.html", nil)
+				page.Render401(w, r)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// Will reject requests from users without the given role. GET requests will require View or above, while
+// any other method will require Edit level.
+func AuthRoleRequiredMiddleware(scope auth.AccessScope) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			level := auth.View
+
+			if r.Method != "GET" {
+				level = auth.Edit
+			}
+
+			if !auth.VerifyRole(r.Context(), scope, level) {
+				w.WriteHeader(http.StatusUnauthorized)
+				page.Render401(w, r)
 				return
 			}
 
