@@ -68,6 +68,26 @@
   --focus: hsla(40, 100%, 90%, 1);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hue: 220;
+    --page: hsl(var(--hue), 12%, 8%);
+
+    --bg: hsl(var(--hue), 10%, 15%);
+    --bg-secondary: hsl(var(--hue), 10%, 20%);
+    --bg-tertiary: hsl(var(--hue), 10%, 25%);
+
+    --fg: hsl(0, 0%, 100%, 0.9);
+    --fg-secondary: hsl(0, 0%, 100%, 0.5);
+
+    --shadow-color: hsla(0, 0%, 100%, 0.5);
+    --inset-shadow-color: hsla(0, 0%, 0%, 0.3);
+
+    --error: hsl(8, 100%, 60%);
+    --focus: hsla(170, 100%, 12%, 1);
+  }
+}
+
 /* selection color */
 ::selection {
   background: var(--fg);
