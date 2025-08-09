@@ -355,6 +355,13 @@ func AdminInviteUser(asUserId string, newUsername string, newPassword string) (s
 }
 
 func AdminDeleteUser(userId string) error {
-	_, err := db.DB.Exec("UPDATE authUsers SET deleted = 1, userName = ? WHERE userId = ?", userId, userId)
+	// Invalidate all sessions for this user first
+	err := AdminInvalidateAllSessions(userId)
+	if err != nil {
+		return err
+	}
+	
+	// Then mark the user as deleted
+	_, err = db.DB.Exec("UPDATE authUsers SET deleted = 1, userName = ? WHERE userId = ?", userId, userId)
 	return err
 }
