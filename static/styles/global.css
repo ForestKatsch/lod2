@@ -251,7 +251,7 @@ body {
     cursor: pointer;
   }
 
-  &:not(.select):focus-visible:not([disabled]) {
+  &:focus-visible:not([disabled]) {
     background-color: var(--focus);
   }
 
@@ -270,7 +270,7 @@ body {
       color: var(--bg);
     }
 
-    &:not(.select):focus-visible:not([disabled]) {
+    &:focus-visible:not([disabled]) {
       background-color: var(--focus);
     }
   }
@@ -424,6 +424,13 @@ table {
   th.no-padding,
   td.no-padding {
     padding: 0;
+
+    .select,
+    .button,
+    input {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
   }
 }
 

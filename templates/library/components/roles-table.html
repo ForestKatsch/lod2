@@ -16,6 +16,9 @@
                 <select
                   name="{{ $role.Scope }}"
                   class="access-level-select select"
+                  {{ if not (hasRole $.Meta.User "UserManagement" "Edit") }}
+                    disabled title="You do not have permission to manage users"
+                  {{ end }}
                 >
                   {{ range $.Const.AllAccessLevels }}
                     <option
@@ -39,6 +42,14 @@
   </div>
   <div class="h gap-fill">
     <span class="muted">{{ .Message }}</span>
-    <button class="button contrast-medium" hx-disabled-elt="this">Save</button>
+    <button
+      class="button contrast-medium"
+      hx-disabled-elt="this"
+      {{ if not (hasRole $.Meta.User "UserManagement" "Edit") }}
+        disabled title="You do not have permission to manage users"
+      {{ end }}
+    >
+      Save
+    </button>
   </div>
 </form>

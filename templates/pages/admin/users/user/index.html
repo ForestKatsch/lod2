@@ -61,6 +61,9 @@
           class="button contrast-medium"
           hx-delete="/admin/users/{{ .User.UserId }}/sessions"
           hx-confirm="End all sessions and require '{{ .User.Username }}' to login again? It may take a few minutes until all sessions are ended."
+          {{ if not (hasRole .Meta.User "UserManagement" "Edit") }}
+            disabled title="You do not have permission to manage users"
+          {{ end }}
         >
           End all
         </button>
