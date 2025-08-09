@@ -1,18 +1,21 @@
 {{ define "content" }}
   {{ if .Meta.User }}
     <section class="v gap-1 align-self-stretch flex-1">
-      <p>You are logged in as <strong>{{ .Meta.User.Username }}</strong></p>
-      <section class="v flex-1">
-        <section class="h gap-1">
-          <a class="button contrast-medium padding-1 flex-1" href="/account">
-            <h3>File management</h3>
-            <h6>Account</h6>
+      <p>
+        You are accessing this service as
+        <strong>{{ .Meta.User.Username }}</strong>
+      </p>
+      <section class="gap-1 link-list">
+        {{ if hasRole .Meta.User "Files" "View" }}
+          <a class="button contrast-medium" href="/account">
+            <h3>File access</h3>
+            <h6>View and manage files</h6>
           </a>
-          <a class="button contrast-medium padding-1 flex-1" href="/account">
-            <h3>File management</h3>
-            <h6>Account</h6>
-          </a>
-        </section>
+        {{ end }}
+        <a class="button contrast-medium" href="/account">
+          <h3>My account</h3>
+          <h6>just use the button up there lmao</h6>
+        </a>
       </section>
     </section>
   {{ else }}
@@ -25,6 +28,21 @@
     #content {
       align-items: center;
       justify-content: center;
+    }
+
+    .link-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+
+      > .button {
+        padding: var(--unit);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .link-list {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 {{ end }}

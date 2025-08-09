@@ -49,9 +49,9 @@ var AllAccessScopes = []AccessScope{
 }
 
 var NameToAccessScope = map[string]AccessScope{
-	"User management": UserManagement,
-	"Database access": DangerousSql,
-	"Files":           Files,
+	"UserManagement": UserManagement,
+	"DangerousSql":   DangerousSql,
+	"Files":          Files,
 }
 
 var AccessScopeToName = make(map[AccessScope]string)
