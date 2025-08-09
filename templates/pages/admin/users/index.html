@@ -76,22 +76,26 @@
                 </button>
               </td>
               <td>
-                <span class="invites-remaining">{{ .InvitesRemaining }}</span>
-                <button
-                  class="link"
-                  hx-post="/admin/users/{{ .UserId }}/reset-invites?to=5"
-                  hx-target="previous .invites-remaining"
-                >
-                  Refill
-                </button>
-                /
-                <button
-                  class="link"
-                  hx-post="/admin/users/{{ .UserId }}/reset-invites"
-                  hx-target="previous .invites-remaining"
-                >
-                  Clear
-                </button>
+                {{ if eq .InvitesRemaining -1 }}
+                  <span class="invites-remaining">∞</span>
+                {{ else }}
+                  <span class="invites-remaining">{{ .InvitesRemaining }}</span>
+                  <button
+                    class="link"
+                    hx-post="/admin/users/{{ .UserId }}/reset-invites?to=5"
+                    hx-target="previous .invites-remaining"
+                  >
+                    Refill
+                  </button>
+                  /
+                  <button
+                    class="link"
+                    hx-post="/admin/users/{{ .UserId }}/reset-invites"
+                    hx-target="previous .invites-remaining"
+                  >
+                    Clear
+                  </button>
+                {{ end }}
               </td>
             </tr>
           {{ end }}

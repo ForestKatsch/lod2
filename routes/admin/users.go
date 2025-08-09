@@ -36,7 +36,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	if currentUser != nil {
 		remaining, err := auth.AdminInvitesRemaining(currentUser.UserId)
 		if err == nil {
-			canCreateUsers = remaining > 0
+			canCreateUsers = remaining > 0 || remaining == -1 // -1 means unlimited
 		}
 	}
 
@@ -153,8 +153,10 @@ func postCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	renderError := func(errorMsg string) {
 		page.Render(w, r, "admin/users/create.html", map[string]interface{}{
-			"Error":    errorMsg,
-			"Username": username,
+			"Error":           errorMsg,
+			"Username":        username,
+			"Password":        password,
+			"ConfirmPassword": confirmPassword,
 		})
 	}
 

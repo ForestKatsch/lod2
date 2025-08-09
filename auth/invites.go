@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"database/sql"
 	"log"
 	"time"
 
@@ -11,15 +12,17 @@ import (
 
 // authInvites table has rows:
 // inviteId TEXT -- the unique invite code
-// userId TEXT -- the user who created this invite
-// issuedAt INTEGER - when the invite was created
-// inviteLimit INTEGER - how many times this invite can be used
+// createdByUserId TEXT -- the user who created this invite
+// consumedByUserId TEXT -- the user who used this invite (NULL if unused)
+// createdAt INTEGER -- when the invite was created
+// consumedAt INTEGER -- when the invite was consumed (NULL if unused)
 
-// Creates a new invite for the given user ID; returns the invite ID if successful, error otherwise.
-func adminCreateInvite(userId string, inviteLimit int) (string, error) {
+// Creates a single new invite for the given user ID
+func AdminCreateInvite(createdByUserId string) (string, error) {
 	inviteId, _ := typeid.WithPrefix("inv")
 
-	_, err := db.DB.Exec("INSERT INTO authInvites (inviteId, userId, issuedAt, inviteLimit) VALUES (?, ?, ?, ?)", inviteId, userId, time.Now().Unix(), inviteLimit)
+	_, err := db.DB.Exec("INSERT INTO authInvites (inviteId, createdByUserId, createdAt) VALUES (?, ?, ?)", 
+		inviteId, createdByUserId, time.Now().Unix())
 
 	if err != nil {
 		log.Println("error creating invite:", err)
@@ -29,87 +32,117 @@ func adminCreateInvite(userId string, inviteLimit int) (string, error) {
 	return inviteId.String(), nil
 }
 
-// Resets the specified user's invite to have at least this many invites left.
-func AdminSetRemainingInvites(userId string, remainingInvites int) error {
-	newInviteId, _ := typeid.WithPrefix("inv")
+// Creates a single new invite for the given user ID within a transaction
+func AdminCreateInviteTx(tx *sql.Tx, createdByUserId string) (string, error) {
+	inviteId, _ := typeid.WithPrefix("inv")
 
-	currentInvitesConsumed, err := invitesConsumed(userId)
-
-	log.Printf("currentInvitesConsumed: %d", currentInvitesConsumed)
+	_, err := tx.Exec("INSERT INTO authInvites (inviteId, createdByUserId, createdAt) VALUES (?, ?, ?)", 
+		inviteId, createdByUserId, time.Now().Unix())
 
 	if err != nil {
-		log.Println("error selecting remaining invites:", err)
+		log.Println("error creating invite:", err)
+		return "", err
+	}
+
+	return inviteId.String(), nil
+}
+
+// Sets the user to have exactly this many unused invites
+func AdminSetRemainingInvites(userId string, remainingInvites int) error {
+	// Delete all unused invites for this user
+	_, err := db.DB.Exec("DELETE FROM authInvites WHERE createdByUserId = ? AND consumedByUserId IS NULL", userId)
+	if err != nil {
 		return err
 	}
 
-	newInviteLimit := currentInvitesConsumed + remainingInvites
-
-	_, err = db.DB.Exec(`
-    INSERT INTO authInvites (inviteId, userId, issuedAt, inviteLimit)
-    VALUES (?, ?, ?, ?)
-    ON CONFLICT(inviteId)
-    DO UPDATE SET inviteLimit = excluded.inviteLimit
-    ON CONFLICT(userId)
-    DO UPDATE SET inviteLimit = excluded.inviteLimit
-`, newInviteId, userId, time.Now().Unix(), newInviteLimit)
-
-	if err != nil {
-		log.Println("error updating invite:", err)
-		return err
+	// Create the specified number of new invites
+	for i := 0; i < remainingInvites; i++ {
+		_, err := AdminCreateInvite(userId)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-// Returns the invite code for the specified user, or an error if not found
+// Returns any unused invite for the specified user, or error if none found
 func GetUserInviteId(userId string) (string, error) {
 	var inviteId string
 
 	err := db.DB.QueryRow(`
 		SELECT inviteId
 		FROM authInvites
-		WHERE userId = ?`, userId).Scan(&inviteId)
+		WHERE createdByUserId = ? AND consumedByUserId IS NULL
+		LIMIT 1`, userId).Scan(&inviteId)
 
 	if err != nil {
-		log.Println("error selecting invite code:", err)
+		log.Println("error selecting unused invite code:", err)
 		return "", err
 	}
 
 	return inviteId, nil
 }
 
-func invitesConsumed(userId string) (int, error) {
-	var invitesConsumed int
+// Returns any unused invite for the specified user within a transaction
+func GetUserInviteIdTx(tx *sql.Tx, userId string) (string, error) {
+	var inviteId string
 
-	err := db.DB.QueryRow(`
-		SELECT COUNT(authUsers.userId) as invitesConsumed
+	err := tx.QueryRow(`
+		SELECT inviteId
 		FROM authInvites
-		LEFT JOIN authUsers ON authInvites.inviteId = authUsers.inviteId
-		WHERE authInvites.userId = ?`, userId).Scan(&invitesConsumed)
+		WHERE createdByUserId = ? AND consumedByUserId IS NULL
+		LIMIT 1`, userId).Scan(&inviteId)
 
 	if err != nil {
-		log.Println("error selecting consumed invites:", err)
-		return 0, err
+		log.Println("error selecting unused invite code:", err)
+		return "", err
 	}
 
-	return invitesConsumed, nil
+	return inviteId, nil
+}
+
+// Marks an invite as consumed by a specific user
+func AdminConsumeInvite(inviteId string, consumedByUserId string) error {
+	_, err := db.DB.Exec(`
+		UPDATE authInvites 
+		SET consumedByUserId = ?, consumedAt = ?
+		WHERE inviteId = ? AND consumedByUserId IS NULL`, 
+		consumedByUserId, time.Now().Unix(), inviteId)
+	
+	return err
+}
+
+// Marks an invite as consumed by a specific user within a transaction
+func AdminConsumeInviteTx(tx *sql.Tx, inviteId string, consumedByUserId string) error {
+	_, err := tx.Exec(`
+		UPDATE authInvites 
+		SET consumedByUserId = ?, consumedAt = ?
+		WHERE inviteId = ? AND consumedByUserId IS NULL`, 
+		consumedByUserId, time.Now().Unix(), inviteId)
+	
+	return err
 }
 
 func AdminInvitesRemaining(userId string) (int, error) {
+	// Check if user has UserManagement Edit permission (unlimited invites)
+	roles, err := GetUserRoles(userId)
+	if err == nil {
+		roleMap := GetRoleMap(roles)
+		if roleMap[UserManagement] >= Edit {
+			return -1, nil // -1 indicates unlimited invites
+		}
+	}
+
+	// Count unused invites for regular users
 	var invitesRemaining int
-	err := db.DB.QueryRow(`
-		SELECT 
-			COALESCE(limits.totalLimit, 0) - COALESCE(used.totalUsed, 0) as invitesRemaining
-		FROM 
-			(SELECT SUM(inviteLimit) as totalLimit FROM authInvites WHERE userId = ?) as limits
-		LEFT JOIN 
-			(SELECT COUNT(*) as totalUsed 
-			 FROM authUsers u 
-			 JOIN authInvites i ON u.inviteId = i.inviteId 
-			 WHERE i.userId = ? AND u.deleted = 0) as used ON 1=1`, userId, userId).Scan(&invitesRemaining)
+	err = db.DB.QueryRow(`
+		SELECT COUNT(*) 
+		FROM authInvites 
+		WHERE createdByUserId = ? AND consumedByUserId IS NULL`, userId).Scan(&invitesRemaining)
 
 	if err != nil {
-		log.Println("error selecting remaining invites:", err)
+		log.Println("error counting remaining invites:", err)
 		return 0, err
 	}
 
