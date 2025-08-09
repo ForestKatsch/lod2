@@ -11,15 +11,6 @@
     <a class="link" hx-get="/account/invite-link" hx-swap="outerHTML"
       >Share invite link</a
     >
-    <hr />
-
-    {{ if .Meta.ShowAdmin }}
-      <div class="v paper padding-1 gap-1">
-        {{ if hasRole .Meta.User "UserManagement" "View" }}
-          <a class="link" href="/admin/">Administrator settings</a>
-        {{ end }}
-      </div>
-    {{ end }}
   </section>
 {{ end }}
 

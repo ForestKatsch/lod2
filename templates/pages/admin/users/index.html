@@ -82,7 +82,7 @@
                   <span class="invites-remaining">{{ .InvitesRemaining }}</span>
                   <button
                     class="link"
-                    hx-put="/admin/users/{{ .UserId }}/reset-invites?to=5"
+                    hx-put="/admin/users/{{ .UserId }}/invites?to=5"
                     hx-target="previous .invites-remaining"
                   >
                     Refill
@@ -90,7 +90,7 @@
                   /
                   <button
                     class="link"
-                    hx-put="/admin/users/{{ .UserId }}/reset-invites"
+                    hx-put="/admin/users/{{ .UserId }}/invites"
                     hx-target="previous .invites-remaining"
                   >
                     Clear
