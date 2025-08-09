@@ -32,40 +32,24 @@ func postLogin(w http.ResponseWriter, r *http.Request) {
 	password := r.Form.Get("password")
 	next := r.Form.Get("nextRedirectUrl")
 
-	var errorMessage = ""
-
-	refreshTokenString, err := auth.IssueRefreshToken(username, password)
-	var accessTokenString string
-
-	if err != nil {
-		errorMessage = err.Error()
-	} else {
-		refreshToken, _ := auth.ParseToken(refreshTokenString)
-
-		accessTokenString, err = auth.IssueAccessToken(refreshToken)
-
-		if err != nil {
-			log.Printf("unable to issue access token from refresh token: %v", err)
-			errorMessage = "Unexpected error. Check logs for more information"
-		}
-	}
-
-	if errorMessage != "" {
-		w.WriteHeader(http.StatusUnauthorized)
-
-		page.Render(w, r, "auth/login.html", map[string]interface{}{
-			"Username": username,
-			"Password": password,
-			"Error":    errorMessage})
-	}
-
 	// should never happen, in theory.
 	if next == "" {
 		next = "/"
 	}
 
-	auth.SetCookie(w, auth.RefreshTokenCookieName, refreshTokenString, auth.RefreshTokenExpirationDuration)
-	auth.SetCookie(w, auth.AccessTokenCookieName, accessTokenString, auth.AccessTokenExpirationDuration)
+	err := auth.SetTokenCookies(w, r, username, password)
+
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		page.Render(w, r, "auth/login.html", map[string]interface{}{
+			"Username": username,
+			"Password": password,
+			"Redirect": next,
+			"Error":    err.Error(),
+		})
+		return
+	}
 
 	log.Printf("sign-in successful, redirecting to %s", next)
 	http.Redirect(w, r, next, http.StatusSeeOther)

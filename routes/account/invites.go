@@ -16,8 +16,11 @@ func getInviteLinkFragment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Generate dynamic invite URL based on current hostname
+	inviteUrl := auth.GenerateInviteURL(r.Host, inviteId)
+
 	page.Render(w, r, "account/fragment-invite-link.html", map[string]interface{}{
 		"InviteId":  inviteId,
-		"InviteUrl": "https://lod2.zip/auth/invite/" + inviteId,
+		"InviteUrl": inviteUrl,
 	})
 }

@@ -123,6 +123,7 @@ type MetaData struct {
 	Now      time.Time
 	User     *auth.UserInfo
 	Roles    []auth.Role
+	Hostname string
 }
 
 // renders a single template
@@ -138,6 +139,7 @@ func Render(w http.ResponseWriter, r *http.Request, path string, data map[string
 	meta := MetaData{
 		Referrer: r.Referer(),
 		Now:      time.Now(),
+		Hostname: r.Host,
 	}
 
 	meta.User = auth.GetCurrentUserInfo(r.Context())

@@ -1,0 +1,85 @@
+{{ define "title" }}Create Account{{ end }}
+
+{{ define "meta" }}
+  <link rel="stylesheet" href="/static/styles/page/auth.css" />
+{{ end }}
+
+{{ define "content" }}
+  <form method="POST" class="v auth-box gap-1">
+    <input type="hidden" name="redirect" value="{{ .Redirect }}" />
+
+    <h1>Register your account</h1>
+    <p class="contrast-medium">
+      You've been invited to LOD2.zip by <strong>{{ .InviteUsername }}</strong>!
+    </p>
+
+    <table class="paper">
+      <tbody>
+        <tr>
+          <td>
+            <label for="username">Username</label>
+          </td>
+          <td>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              value="{{ .Username }}"
+              required
+              autocomplete="off"
+              autofocus
+            />
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <label for="password">Password</label>
+          </td>
+          <td>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value="{{ .Password }}"
+              required
+              autocomplete="new-password"
+            />
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <label for="confirm_password">Confirm Password</label>
+          </td>
+          <td>
+            <input
+              id="confirm_password"
+              name="confirm_password"
+              type="password"
+              value="{{ .ConfirmPassword }}"
+              required
+              autocomplete="new-password"
+            />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    {{ if .Error }}
+      <div class="error alert">{{ .Error }}</div>
+    {{ end }}
+
+
+    <div class="h gap-fill">
+      <a href="/auth/login" class="link contrast-medium"
+        >Already have an account?</a
+      >
+      <button class="button contrast-medium" type="submit">
+        Create account
+      </button>
+    </div>
+  </form>
+{{ end }}
+
+{{ template "layout/main.html" . }}

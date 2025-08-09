@@ -1,0 +1,22 @@
+{{ define "title" }}Expired invitation{{ end }}
+
+{{ define "meta" }}
+  <link rel="stylesheet" href="/static/styles/page/auth.css" />
+{{ end }}
+
+{{ define "content" }}
+  <div class="v auth-box gap-1">
+    <h1>Expired invitation</h1>
+
+    <div class="error alert">
+      {{ .Error }}
+    </div>
+
+    <p class="contrast-medium">
+      This invite link may have expired or already been used. Please contact the
+      person who sent you this invite for a new one.
+    </p>
+  </div>
+{{ end }}
+
+{{ template "layout/main.html" . }}

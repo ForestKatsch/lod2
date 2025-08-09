@@ -2,7 +2,9 @@ package auth
 
 import (
 	"database/sql"
+	"errors"
 	"log"
+	"strings"
 	"time"
 
 	"lod2/db"
@@ -21,7 +23,7 @@ import (
 func AdminCreateInvite(createdByUserId string) (string, error) {
 	inviteId, _ := typeid.WithPrefix("inv")
 
-	_, err := db.DB.Exec("INSERT INTO authInvites (inviteId, createdByUserId, createdAt) VALUES (?, ?, ?)", 
+	_, err := db.DB.Exec("INSERT INTO authInvites (inviteId, createdByUserId, createdAt) VALUES (?, ?, ?)",
 		inviteId, createdByUserId, time.Now().Unix())
 
 	if err != nil {
@@ -36,7 +38,7 @@ func AdminCreateInvite(createdByUserId string) (string, error) {
 func AdminCreateInviteTx(tx *sql.Tx, createdByUserId string) (string, error) {
 	inviteId, _ := typeid.WithPrefix("inv")
 
-	_, err := tx.Exec("INSERT INTO authInvites (inviteId, createdByUserId, createdAt) VALUES (?, ?, ?)", 
+	_, err := tx.Exec("INSERT INTO authInvites (inviteId, createdByUserId, createdAt) VALUES (?, ?, ?)",
 		inviteId, createdByUserId, time.Now().Unix())
 
 	if err != nil {
@@ -66,7 +68,7 @@ func AdminSetRemainingInvites(userId string, remainingInvites int) error {
 	return nil
 }
 
-// Returns any unused invite for the specified user, or error if none found
+// Returns the first unused invite for the specified user, or error if none found
 func GetUserInviteId(userId string) (string, error) {
 	var inviteId string
 
@@ -74,6 +76,7 @@ func GetUserInviteId(userId string) (string, error) {
 		SELECT inviteId
 		FROM authInvites
 		WHERE createdByUserId = ? AND consumedByUserId IS NULL
+		ORDER BY inviteId DESC
 		LIMIT 1`, userId).Scan(&inviteId)
 
 	if err != nil {
@@ -107,9 +110,9 @@ func AdminConsumeInvite(inviteId string, consumedByUserId string) error {
 	_, err := db.DB.Exec(`
 		UPDATE authInvites 
 		SET consumedByUserId = ?, consumedAt = ?
-		WHERE inviteId = ? AND consumedByUserId IS NULL`, 
+		WHERE inviteId = ? AND consumedByUserId IS NULL`,
 		consumedByUserId, time.Now().Unix(), inviteId)
-	
+
 	return err
 }
 
@@ -118,9 +121,9 @@ func AdminConsumeInviteTx(tx *sql.Tx, inviteId string, consumedByUserId string) 
 	_, err := tx.Exec(`
 		UPDATE authInvites 
 		SET consumedByUserId = ?, consumedAt = ?
-		WHERE inviteId = ? AND consumedByUserId IS NULL`, 
+		WHERE inviteId = ? AND consumedByUserId IS NULL`,
 		consumedByUserId, time.Now().Unix(), inviteId)
-	
+
 	return err
 }
 
@@ -147,4 +150,74 @@ func AdminInvitesRemaining(userId string) (int, error) {
 	}
 
 	return invitesRemaining, nil
+}
+
+// Validates an invite code and returns invite info if valid
+func ValidateInviteCode(inviteCode string) (createdByUserId string, err error) {
+	var createdBy string
+
+	err = db.DB.QueryRow(`
+		SELECT createdByUserId 
+		FROM authInvites 
+		WHERE inviteId = ? AND consumedByUserId IS NULL`, inviteCode).Scan(&createdBy)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", errors.New("invalid or expired invite code")
+		}
+		return "", err
+	}
+
+	return createdBy, nil
+}
+
+// Registers a new user with an invite code
+func RegisterUserWithInvite(inviteCode string, username string, password string) (string, error) {
+	// Validate invite code first
+	_, err := ValidateInviteCode(inviteCode)
+	if err != nil {
+		return "", err
+	}
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback()
+
+	// Create the new user using the existing helper function
+	newUserId, err := createUserWithInvite(tx, username, password, inviteCode)
+	if err != nil {
+		return "", err
+	}
+
+	// Consume the invite
+	err = AdminConsumeInviteTx(tx, inviteCode, newUserId)
+	if err != nil {
+		return "", err
+	}
+
+	// Give the new user 5 starting invites
+	for i := 0; i < 5; i++ {
+		_, err := AdminCreateInviteTx(tx, newUserId)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return "", err
+	}
+
+	return newUserId, nil
+}
+
+// Generates a full invite URL for sharing
+func GenerateInviteURL(hostname string, inviteCode string) string {
+	// Use https for non-localhost hosts, http for localhost
+	scheme := "https"
+	if hostname == "localhost:10800" || strings.HasPrefix(hostname, "localhost") {
+		scheme = "http"
+	}
+	return scheme + "://" + hostname + "/auth/invite/" + inviteCode
 }

@@ -14,5 +14,8 @@ func Router() chi.Router {
 	r.Get("/logout", getLogout)
 	r.Post("/logout/confirm", postLogoutConfirm)
 
+	r.Get("/invite/{inviteCode}", getInvite)
+	r.Post("/invite/{inviteCode}", postInvite)
+
 	return r
 }

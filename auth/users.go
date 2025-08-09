@@ -52,6 +52,33 @@ func createUser(tx *sql.Tx, username string, password string, roles []Role) (str
 	return userId.String(), nil
 }
 
+// Creates a user with an invite code (for invited users)
+func createUserWithInvite(tx *sql.Tx, username string, password string, inviteId string) (string, error) {
+	userId, _ := typeid.WithPrefix("user")
+	passwordHash, err := hashPassword(password)
+
+	if err != nil {
+		return "", err
+	}
+
+	_, err = tx.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash, createdAt, inviteId) VALUES (?, ?, ?, ?, ?)", 
+		userId, username, passwordHash, time.Now().Unix(), inviteId)
+
+	if err != nil {
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) {
+			if sqliteErr.Code == sqlite3.ErrConstraint {
+				return "", errors.New("this username is already taken")
+			}
+		}
+
+		return "", err
+	}
+
+	// No roles for invited users (they start with none)
+	return userId.String(), nil
+}
+
 // Returns the user ID, or an error if the user does not exist or the password is incorrect.
 func getUserLogin(username string, password string) (string, error) {
 	var userId string
@@ -299,12 +326,6 @@ func AdminGetUserById(userId string) (UserSessionInfo, error) {
 }
 
 func AdminInviteUser(asUserId string, newUsername string, newPassword string) (string, error) {
-	tx, err := db.DB.Begin()
-	if err != nil {
-		return "", err
-	}
-	defer tx.Rollback()
-
 	// Check if user has unlimited invites (admins) or has remaining invites
 	remaining, err := AdminInvitesRemaining(asUserId)
 	if err != nil {
@@ -314,8 +335,8 @@ func AdminInviteUser(asUserId string, newUsername string, newPassword string) (s
 	var inviteId string
 
 	if remaining == -1 {
-		// Admin with unlimited invites - create and immediately consume an invite
-		inviteId, err = AdminCreateInviteTx(tx, asUserId)
+		// Admin with unlimited invites - create an invite to use
+		inviteId, err = AdminCreateInvite(asUserId)
 		if err != nil {
 			return "", err
 		}
@@ -323,51 +344,14 @@ func AdminInviteUser(asUserId string, newUsername string, newPassword string) (s
 		return "", errors.New("no invites remaining")
 	} else {
 		// Regular user with remaining invites - get an unused invite
-		inviteId, err = GetUserInviteIdTx(tx, asUserId)
+		inviteId, err = GetUserInviteId(asUserId)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	newUserId, _ := typeid.WithPrefix("user")
-	passwordHash, err := hashPassword(newPassword)
-	if err != nil {
-		return "", err
-	}
-
-	// Create the new user
-	_, err = tx.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash, createdAt, inviteId) VALUES (?, ?, ?, ?, ?)",
-		newUserId, newUsername, passwordHash, time.Now().Unix(), inviteId)
-
-	if err != nil {
-		var sqliteErr sqlite3.Error
-		if errors.As(err, &sqliteErr) {
-			if sqliteErr.Code == sqlite3.ErrConstraint {
-				return "", errors.New("this username is already taken")
-			}
-		}
-		return "", err
-	}
-
-	// Consume the invite
-	err = AdminConsumeInviteTx(tx, inviteId, newUserId.String())
-	if err != nil {
-		return "", err
-	}
-
-	// Give the new user 5 starting invites
-	for i := 0; i < 5; i++ {
-		_, err := AdminCreateInviteTx(tx, newUserId.String())
-		if err != nil {
-			return "", err
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		return "", err
-	}
-
-	return newUserId.String(), nil
+	// Use the existing registration function
+	return RegisterUserWithInvite(inviteId, newUsername, newPassword)
 }
 
 func AdminDeleteUser(userId string) error {
