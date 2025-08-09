@@ -200,6 +200,10 @@ body {
   align-self: stretch;
 }
 
+.muted {
+  color: var(--fg-secondary);
+}
+
 .flex-1 {
   flex: 1;
 }

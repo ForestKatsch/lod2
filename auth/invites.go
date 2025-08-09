@@ -95,14 +95,18 @@ func invitesConsumed(userId string) (int, error) {
 	return invitesConsumed, nil
 }
 
-func invitesRemaining(userId string) (int, error) {
+func AdminInvitesRemaining(userId string) (int, error) {
 	var invitesRemaining int
-
 	err := db.DB.QueryRow(`
-		SELECT SUM(authInvites.inviteLimit) - COUNT(authUsers.userId) as invitesRemaining
-		FROM authInvites
-		LEFT JOIN authUsers ON authInvites.inviteId = authUsers.inviteId
-		WHERE authInvites.userId = ?`, userId).Scan(&invitesRemaining)
+		SELECT 
+			COALESCE(limits.totalLimit, 0) - COALESCE(used.totalUsed, 0) as invitesRemaining
+		FROM 
+			(SELECT SUM(inviteLimit) as totalLimit FROM authInvites WHERE userId = ?) as limits
+		LEFT JOIN 
+			(SELECT COUNT(*) as totalUsed 
+			 FROM authUsers u 
+			 JOIN authInvites i ON u.inviteId = i.inviteId 
+			 WHERE i.userId = ?) as used ON 1=1`, userId, userId).Scan(&invitesRemaining)
 
 	if err != nil {
 		log.Println("error selecting remaining invites:", err)

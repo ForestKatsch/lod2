@@ -146,22 +146,27 @@ type UserSessionInfo struct {
 func AdminGetAllUsers() ([]UserSessionInfo, error) {
 	rows, err := db.DB.Query(`
 	SELECT
-    authUsers.userId,
-    authUsers.userName,
-    COALESCE(MAX(authSessions.issuedAt), 0) AS lastLogin,
-    COALESCE(MAX(authSessions.refreshedAt), 0) AS lastActivity,
-    authUsers.createdAt,
-    COALESCE(COUNT(CASE WHEN authSessions.expiresAt > ? THEN 1 ELSE NULL END), 0) AS sessionCount,
-    COALESCE(invites.inviteLimitTotal, 0) - COUNT(authUsers.inviteId) AS invitesRemaining
-	FROM authUsers
-	LEFT JOIN authSessions ON authUsers.userId = authSessions.userId
+    u.userId,
+    u.userName,
+    COALESCE(MAX(s.issuedAt), 0) AS lastLogin,
+    COALESCE(MAX(s.refreshedAt), 0) AS lastActivity,
+    u.createdAt,
+    COALESCE(COUNT(CASE WHEN s.expiresAt > ? THEN 1 ELSE NULL END), 0) AS sessionCount,
+    COALESCE(inviteLimits.totalLimit, 0) - COALESCE(inviteUsage.totalUsed, 0) AS invitesRemaining
+	FROM authUsers u
+	LEFT JOIN authSessions s ON u.userId = s.userId
 	LEFT JOIN (
-    -- Aggregate invite limits per user first
-    SELECT userId, SUM(inviteLimit) AS inviteLimitTotal
+    SELECT userId, SUM(inviteLimit) AS totalLimit
     FROM authInvites
     GROUP BY userId
-  ) AS invites ON invites.userId = authUsers.userId
-  GROUP BY authUsers.userId, authUsers.userName, invites.inviteLimitTotal;`, time.Now().Unix())
+  ) AS inviteLimits ON inviteLimits.userId = u.userId
+  LEFT JOIN (
+    SELECT i.userId, COUNT(invitedUsers.userId) AS totalUsed
+    FROM authInvites i
+    LEFT JOIN authUsers invitedUsers ON i.inviteId = invitedUsers.inviteId
+    GROUP BY i.userId
+  ) AS inviteUsage ON inviteUsage.userId = u.userId
+  GROUP BY u.userId, u.userName, u.createdAt, inviteLimits.totalLimit, inviteUsage.totalUsed;`, time.Now().Unix())
 
 	if err != nil {
 		return nil, err
@@ -190,11 +195,19 @@ func AdminGetAllUsers() ([]UserSessionInfo, error) {
 			lastActivity = lastLogin
 		}
 
+		var lastLoginTime, lastActivityTime time.Time
+		if lastLogin > 0 {
+			lastLoginTime = time.Unix(lastLogin, 0)
+		}
+		if lastActivity > 0 {
+			lastActivityTime = time.Unix(lastActivity, 0)
+		}
+
 		users = append(users, UserSessionInfo{
 			UserId:           userId,
 			Username:         userName,
-			LastLogin:        time.Unix(lastLogin, 0),
-			LastActivity:     time.Unix(lastActivity, 0),
+			LastLogin:        lastLoginTime,
+			LastActivity:     lastActivityTime,
 			CreatedAt:        time.Unix(createdAt, 0),
 			SessionCount:     sessionCount,
 			InvitesRemaining: invitesRemaining,
@@ -280,4 +293,59 @@ func AdminGetUserById(userId string) (UserSessionInfo, error) {
 		InvitedByUserId:  invitedByUserId,
 		Roles:            roles,
 	}, nil
+}
+
+func AdminInviteUser(asUserId string, newUsername string, newPassword string) (string, error) {
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback()
+
+	inviterInviteId, err := GetUserInviteId(asUserId)
+	if err != nil {
+		return "", err
+	}
+
+	remaining, err := AdminInvitesRemaining(asUserId)
+	if err != nil {
+		return "", err
+	}
+
+	if remaining <= 0 {
+		return "", errors.New("no invites remaining")
+	}
+
+	newUserId, _ := typeid.WithPrefix("user")
+	passwordHash, err := hashPassword(newPassword)
+	if err != nil {
+		return "", err
+	}
+
+	newInviteId, _ := typeid.WithPrefix("inv")
+
+	_, err = tx.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash, createdAt, inviteId) VALUES (?, ?, ?, ?, ?)",
+		newUserId, newUsername, passwordHash, time.Now().Unix(), inviterInviteId)
+
+	if err != nil {
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) {
+			if sqliteErr.Code == sqlite3.ErrConstraint {
+				return "", errors.New("this username is already taken")
+			}
+		}
+		return "", err
+	}
+
+	_, err = tx.Exec("INSERT INTO authInvites (inviteId, userId, issuedAt, inviteLimit) VALUES (?, ?, ?, ?)",
+		newInviteId, newUserId, time.Now().Unix(), 5)
+	if err != nil {
+		return "", err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return "", err
+	}
+
+	return newUserId.String(), nil
 }

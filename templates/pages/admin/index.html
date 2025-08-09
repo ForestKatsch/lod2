@@ -1,26 +1,30 @@
 {{ define "title" }}Admin{{ end }}
 
 {{ define "meta" }}
-<style></style>
+  <style></style>
 {{ end }}
 
 {{ define "content" }}
-<header class="h">
-  <nav class="breadcrumbs">
-    <a href="/admin">Admin</a>
-  </nav>
-</header>
-<section class="v gap-1">
-  <a href="/admin/users" class="link">User management</a>
-  <hr />
-  <form class="v gap-01" hx-post="/admin/db/execute" hx-target="#results">
-    <textarea name="query" class="inset" placeholder="SELECT * FROM table"></textarea>
-    <button class="button contrast-medium align-self-end">Execute</button>
-  </form>
-  <section id="results" class="v gap-01">
-    <div class="alert info">execute a query to view rows</div>
+  <header class="h">
+    <nav class="breadcrumbs">
+      <a href="/admin">Admin</a>
+    </nav>
+  </header>
+  <section class="v gap-1">
+    <a href="/admin/users" class="link">User management</a>
+    <hr />
+    <form class="v gap-01" hx-post="/admin/db/execute" hx-target="#results">
+      <textarea
+        name="query"
+        class="inset"
+        placeholder="SELECT * FROM table"
+      ></textarea>
+      <button class="button contrast-medium align-self-end">Execute</button>
+    </form>
+    <section id="results" class="v gap-01">
+      <div class="alert info">execute a query to view rows</div>
+    </section>
   </section>
-</section>
 {{ end }}
 
 {{ template "layout/main.html" . }}

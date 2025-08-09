@@ -74,11 +74,11 @@ func Router() chi.Router {
 				return
 			}
 
-			for i, _ := range columns {
+			for i, colName := range columns {
 				if val, ok := (*(columnPointers[i].(*interface{}))).(interface{ Valid() bool }); ok && !val.Valid() {
-					columnMap[string(i)] = ""
+					columnMap[colName] = ""
 				} else {
-					columnMap[string(i)] = *(columnPointers[i].(*interface{}))
+					columnMap[colName] = *(columnPointers[i].(*interface{}))
 				}
 			}
 			data["Rows"] = append(data["Rows"].([]map[string]interface{}), columnMap)

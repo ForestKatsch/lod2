@@ -45,16 +45,24 @@
                 </strong>
               </td>
               <td>
-                <time datetime="{{ .LastLogin }}" title="{{ .LastLogin }}"
-                  >{{ .LastLogin | date "2006-01-02 15:04:05" }}
-                  ago</time
-                >
+                {{ if .LastLogin.IsZero }}
+                  -
+                {{ else }}
+                  <time datetime="{{ .LastLogin }}" title="{{ .LastLogin }}"
+                    >{{ .LastLogin | date "2006-01-02 15:04:05" }}
+                  </time>
+                {{ end }}
               </td>
               <td>
-                <time datetime="{{ .LastActivity }}" title="{{ .LastActivity }}"
-                  >{{ .LastActivity | date "2006-01-02 15:04:05" }}
-                  ago</time
-                >
+                {{ if .LastActivity.IsZero }}
+                  -
+                {{ else }}
+                  <time
+                    datetime="{{ .LastActivity }}"
+                    title="{{ .LastActivity }}"
+                    >{{ .LastActivity | date "2006-01-02 15:04:05" }}
+                  </time>
+                {{ end }}
               </td>
               <td>
                 <span class="session-count">{{ .SessionCount }}</span>
@@ -90,8 +98,16 @@
         </tbody>
       </table>
     </div>
-    <div class="h justify-end">
-      <a class="button contrast-medium" href="/admin/invite">Invite</a>
+    <div class="h justify-end gap-1">
+      <a
+        class="button contrast-medium"
+        {{ if .CanCreateUsers }}
+          href="/admin/users/create"
+        {{ else }}
+          disabled title="No invites remaining"
+        {{ end }}
+        >Create User</a
+      >
     </div>
   </section>
 {{ end }}

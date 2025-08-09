@@ -1,0 +1,81 @@
+{{ define "title" }}Create User{{ end }}
+
+{{ define "meta" }}
+  <link rel="stylesheet" href="/static/styles/page/auth.css" />
+{{ end }}
+
+{{ define "content" }}
+  <header class="h">
+    <nav class="breadcrumbs">
+      <a href="/admin">Admin</a>
+      <a href="/admin/users">User management</a>
+      <a href="/admin/users/create">Create user</a>
+    </nav>
+  </header>
+
+  <form method="POST" class="v auth-box gap-1">
+    <h1>Create User</h1>
+
+    <table class="paper">
+      <tbody>
+        <tr>
+          <td>
+            <label for="username">Username</label>
+          </td>
+          <td>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              value="{{ .Username }}"
+              required
+              autocomplete="off"
+              autofocus
+            />
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <label for="password">Password</label>
+          </td>
+          <td>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              autocomplete="new-password"
+            />
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <label for="confirm_password">Confirm Password</label>
+          </td>
+          <td>
+            <input
+              id="confirm_password"
+              name="confirm_password"
+              type="password"
+              required
+              autocomplete="new-password"
+            />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    {{ if .Error }}
+      <div class="error alert">{{ .Error }}</div>
+    {{ end }}
+
+    <div class="h gap-fill">
+      <a href="/admin/users" class="link contrast-medium">Cancel</a>
+      <button class="button contrast-medium" type="submit">Create User</button>
+    </div>
+  </form>
+{{ end }}
+
+{{ template "layout/main.html" . }}

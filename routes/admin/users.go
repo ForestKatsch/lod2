@@ -25,18 +25,24 @@ func userCtx(next http.Handler) http.Handler {
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
-	type getUserData struct {
-		Users []auth.UserInfo
-	}
-
 	users, err := auth.AdminGetAllUsers()
 	if err != nil {
 		page.RenderError(w, r, err)
 		return
 	}
 
+	currentUser := auth.GetCurrentUserInfo(r.Context())
+	var canCreateUsers bool
+	if currentUser != nil {
+		remaining, err := auth.AdminInvitesRemaining(currentUser.UserId)
+		if err == nil {
+			canCreateUsers = remaining > 0
+		}
+	}
+
 	page.Render(w, r, "admin/users/index.html", map[string]interface{}{
-		"Users": users,
+		"Users":          users,
+		"CanCreateUsers": canCreateUsers,
 	})
 }
 
@@ -106,11 +112,61 @@ func postUserResetInvites(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(strconv.Itoa(invitesLeft)))
 }
 
+func getCreateUser(w http.ResponseWriter, r *http.Request) {
+	page.Render(w, r, "admin/users/create.html", map[string]interface{}{})
+}
+
+func postCreateUser(w http.ResponseWriter, r *http.Request) {
+	currentUser := auth.GetCurrentUserInfo(r.Context())
+	if currentUser == nil {
+		page.Render401(w, r)
+		return
+	}
+
+	r.ParseForm()
+
+	username := r.Form.Get("username")
+	password := r.Form.Get("password")
+	confirmPassword := r.Form.Get("confirm_password")
+
+	renderError := func(errorMsg string) {
+		page.Render(w, r, "admin/users/create.html", map[string]interface{}{
+			"Error":    errorMsg,
+			"Username": username,
+		})
+	}
+
+	if username == "" {
+		renderError("Username is required")
+		return
+	}
+
+	if password == "" {
+		renderError("Password is required")
+		return
+	}
+
+	if password != confirmPassword {
+		renderError("Passwords do not match")
+		return
+	}
+
+	userId, err := auth.AdminInviteUser(currentUser.UserId, username, password)
+	if err != nil {
+		renderError(err.Error())
+		return
+	}
+
+	http.Redirect(w, r, "/admin/users/"+userId, http.StatusSeeOther)
+}
+
 func userRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.AuthRoleRequiredMiddleware(auth.UserManagement))
 
 	r.Get("/", getUsers)
+	r.Get("/create", getCreateUser)
+	r.Post("/create", postCreateUser)
 
 	r.Route("/{userId}", func(r chi.Router) {
 		r.Use(userCtx)
