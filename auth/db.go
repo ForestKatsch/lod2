@@ -98,6 +98,13 @@ func migrateAuth(tx *sql.Tx, version int) (int, error) {
 		version = 8
 	}
 
+	if version < 9 {
+		if _, err := tx.Exec("ALTER TABLE authUsers ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0"); err != nil {
+			return version, err
+		}
+		version = 9
+	}
+
 	// Sneakily always update the admin user to have all roles. This runs at every boot and makes sure the admin user has all roles even if additional scopes are added.
 	userId, err := AdminGetUserIdByUsername(tx, "admin")
 	if err != nil {

@@ -64,7 +64,7 @@
   --link: hsl(210, 100%, 50%);
 
   --error: hsl(8, 100%, 40%);
-
+  --success: hsl(160, 70%, 40%);
   --focus: hsla(40, 100%, 90%, 1);
 }
 
@@ -84,6 +84,7 @@
     --inset-shadow-color: hsla(0, 0%, 0%, 0.3);
 
     --error: hsl(8, 100%, 60%);
+    --success: hsl(160, 70%, 60%);
     --focus: hsla(170, 100%, 12%, 1);
   }
 }
@@ -138,10 +139,6 @@ body {
   flex-direction: row;
   align-items: center;
   row-gap: 0.5rem;
-}
-
-.padding-1 {
-  padding: 1rem;
 }
 
 .gap-01 {
@@ -213,6 +210,20 @@ body {
   outline: 1px solid var(--fg);
   box-shadow: var(--shadow);
   background: var(--bg);
+
+  &.danger {
+    outline-color: var(--error);
+    --shadow-color: var(--error);
+    --shadow: 0 calc(var(--shadow-offset) * 2 + 1px) 0
+      calc(var(--shadow-offset) * -1) var(--shadow-color);
+    color: var(--error);
+
+    tr,
+    td,
+    th {
+      border-color: var(--error);
+    }
+  }
 }
 
 /* inset */
@@ -255,6 +266,25 @@ body {
 
     &:focus-visible:not([disabled]) {
       background: var(--focus);
+    }
+  }
+
+  &.error {
+    &.contrast-low {
+      color: var(--error);
+    }
+
+    &.contrast-medium {
+      outline-color: var(--error);
+      --shadow-color: var(--error);
+      --shadow: 0 calc(var(--shadow-offset) * 2 + 1px) 0
+        calc(var(--shadow-offset) * -1) var(--shadow-color);
+      color: var(--error);
+    }
+
+    &.contrast-high {
+      background: var(--error);
+      color: var(--bg);
     }
   }
 
@@ -386,7 +416,7 @@ table {
     --error: var(--fg-secondary);
   }
   &.success {
-    --error: hsla(160, 70%, 40%, 1);
+    --error: var(--success);
   }
 }
 /*** GLOBALS (header) */
@@ -501,4 +531,12 @@ table {
 
 #content {
   flex-grow: 1;
+}
+
+.padding-1 {
+  padding: 1rem;
+}
+
+.padding-2 {
+  padding: 2rem;
 }

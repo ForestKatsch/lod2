@@ -48,6 +48,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 
 func getUser(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(auth.UserSessionInfo)
+	currentUser := auth.GetCurrentUserInfo(r.Context())
 	sessions, err := auth.AdminGetUserSessions(user.UserId)
 
 	if err != nil {
@@ -56,8 +57,9 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"User":     user,
-		"Sessions": sessions,
+		"User":           user,
+		"Sessions":       sessions,
+		"CanDeleteUser":  currentUser != nil && user.UserId != currentUser.UserId,
 	}
 
 	if user.InvitedByUserId != nil {
@@ -110,6 +112,26 @@ func postUserResetInvites(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(strconv.Itoa(invitesLeft)))
+}
+
+func deleteUserDelete(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("user").(auth.UserSessionInfo)
+	currentUser := auth.GetCurrentUserInfo(r.Context())
+
+	// Prevent users from deleting themselves
+	if currentUser != nil && user.UserId == currentUser.UserId {
+		http.Error(w, "Cannot delete yourself", http.StatusBadRequest)
+		return
+	}
+
+	err := auth.AdminDeleteUser(user.UserId)
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Hx-Location", "/admin/users")
+	w.WriteHeader(http.StatusOK)
 }
 
 func getCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -173,6 +195,7 @@ func userRouter() chi.Router {
 		r.Get("/", getUser)
 		r.Post("/end-all-sessions", postUserEndAllSessions)
 		r.Post("/reset-invites", postUserResetInvites)
+		r.Delete("/delete", deleteUserDelete)
 	})
 
 	return r

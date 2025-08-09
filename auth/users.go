@@ -163,9 +163,10 @@ func AdminGetAllUsers() ([]UserSessionInfo, error) {
   LEFT JOIN (
     SELECT i.userId, COUNT(invitedUsers.userId) AS totalUsed
     FROM authInvites i
-    LEFT JOIN authUsers invitedUsers ON i.inviteId = invitedUsers.inviteId
+    LEFT JOIN authUsers invitedUsers ON i.inviteId = invitedUsers.inviteId AND invitedUsers.deleted = 0
     GROUP BY i.userId
   ) AS inviteUsage ON inviteUsage.userId = u.userId
+  WHERE u.deleted = 0
   GROUP BY u.userId, u.userName, u.createdAt, inviteLimits.totalLimit, inviteUsage.totalUsed;`, time.Now().Unix())
 
 	if err != nil {
@@ -222,7 +223,7 @@ func AdminGetUserIdByUsername(tx *sql.Tx, username string) (string, error) {
 		SELECT
 			authUsers.userId
 		FROM authUsers
-		WHERE authUsers.userName = ?`, username)
+		WHERE authUsers.userName = ? AND authUsers.deleted = 0`, username)
 
 	if row == nil {
 		return "", errors.New("invalid username")
@@ -257,7 +258,7 @@ func AdminGetUserById(userId string) (UserSessionInfo, error) {
         LEFT JOIN authSessions AS s ON u.userId = s.userId
         LEFT JOIN invite_totals AS it ON it.userId = u.userId
         LEFT JOIN authInvites AS i ON i.inviteId = u.inviteId
-        WHERE u.userId = ?
+        WHERE u.userId = ? AND u.deleted = 0
         GROUP BY u.userId, u.userName, u.createdAt, it.inviteLimitTotal, i.userId
     `, time.Now().Unix(), userId)
 
@@ -348,4 +349,9 @@ func AdminInviteUser(asUserId string, newUsername string, newPassword string) (s
 	}
 
 	return newUserId.String(), nil
+}
+
+func AdminDeleteUser(userId string) error {
+	_, err := db.DB.Exec("UPDATE authUsers SET deleted = 1, userName = ? WHERE userId = ?", userId, userId)
+	return err
 }

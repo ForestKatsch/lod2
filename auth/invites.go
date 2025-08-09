@@ -106,7 +106,7 @@ func AdminInvitesRemaining(userId string) (int, error) {
 			(SELECT COUNT(*) as totalUsed 
 			 FROM authUsers u 
 			 JOIN authInvites i ON u.inviteId = i.inviteId 
-			 WHERE i.userId = ?) as used ON 1=1`, userId, userId).Scan(&invitesRemaining)
+			 WHERE i.userId = ? AND u.deleted = 0) as used ON 1=1`, userId, userId).Scan(&invitesRemaining)
 
 	if err != nil {
 		log.Println("error selecting remaining invites:", err)
