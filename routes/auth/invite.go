@@ -22,13 +22,17 @@ func getInviteAndUsername(w http.ResponseWriter, r *http.Request) (string, strin
 func getInvite(w http.ResponseWriter, r *http.Request) {
 	// check if the user is already logged in
 	if auth.IsUserLoggedIn(r.Context()) {
-		http.Redirect(w, r, "/account", http.StatusSeeOther)
+		page.Render(w, r, "auth/invite-invalid.html", map[string]interface{}{
+			"Title": "You are already logged in",
+			"Error": "You cannot redeem an invitation while logged in. Please log out and try again.",
+		})
 		return
 	}
 
 	inviteCode, inviteUsername, err := getInviteAndUsername(w, r)
 	if err != nil {
 		page.Render(w, r, "auth/invite-invalid.html", map[string]interface{}{
+			"Title": "Invalid or expired invite",
 			"Error": err.Error(),
 		})
 		return
@@ -48,7 +52,10 @@ func getInvite(w http.ResponseWriter, r *http.Request) {
 func postInvite(w http.ResponseWriter, r *http.Request) {
 	// check if the user is already logged in
 	if auth.IsUserLoggedIn(r.Context()) {
-		http.Redirect(w, r, "/account", http.StatusSeeOther)
+		page.Render(w, r, "auth/invite-invalid.html", map[string]interface{}{
+			"Title": "You are already logged in",
+			"Error": "You cannot redeem an invitation while logged in. Please log out and try again.",
+		})
 		return
 	}
 
@@ -58,6 +65,7 @@ func postInvite(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		page.Render(w, r, "auth/invite-invalid.html", map[string]interface{}{
+			"Title": "Invalid or expired invite",
 			"Error": err.Error(),
 		})
 		return
