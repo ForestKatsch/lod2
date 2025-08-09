@@ -113,8 +113,8 @@ func migrateAuth(tx *sql.Tx, version int) (int, error) {
 		if _, err := tx.Exec("DROP TABLE IF EXISTS authInvites"); err != nil {
 			return version, err
 		}
-		
-		// Create new one-invite-per-row system  
+
+		// Create new one-invite-per-row system
 		if _, err := tx.Exec(`
 			CREATE TABLE authInvites (
 				inviteId TEXT PRIMARY KEY NOT NULL UNIQUE,
@@ -134,7 +134,7 @@ func migrateAuth(tx *sql.Tx, version int) (int, error) {
 		return version, err
 	}
 
-	if err := addRoles(tx, userId, AllRoles); err != nil {
+	if err := setRoles(tx, userId, AllRoles); err != nil {
 		return version, err
 	}
 
@@ -145,7 +145,7 @@ func migrateAuth(tx *sql.Tx, version int) (int, error) {
 	if inviteCount == 0 {
 		for i := 0; i < 5; i++ {
 			inviteId, _ := typeid.WithPrefix("inv")
-			tx.Exec("INSERT INTO authInvites (inviteId, createdByUserId, createdAt) VALUES (?, ?, ?)", 
+			tx.Exec("INSERT INTO authInvites (inviteId, createdByUserId, createdAt) VALUES (?, ?, ?)",
 				inviteId, userId, time.Now().Unix())
 		}
 	}

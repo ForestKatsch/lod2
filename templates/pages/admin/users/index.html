@@ -23,7 +23,7 @@
   </header>
 
   <section class="v gap-2">
-    <div class="v paper table_container">
+    <div class="v paper table-container">
       <table id="_user_table" class="data padding">
         <thead>
           <tr>
@@ -82,7 +82,7 @@
                   <span class="invites-remaining">{{ .InvitesRemaining }}</span>
                   <button
                     class="link"
-                    hx-post="/admin/users/{{ .UserId }}/reset-invites?to=5"
+                    hx-put="/admin/users/{{ .UserId }}/reset-invites?to=5"
                     hx-target="previous .invites-remaining"
                   >
                     Refill
@@ -90,7 +90,7 @@
                   /
                   <button
                     class="link"
-                    hx-post="/admin/users/{{ .UserId }}/reset-invites"
+                    hx-put="/admin/users/{{ .UserId }}/reset-invites"
                     hx-target="previous .invites-remaining"
                   >
                     Clear

@@ -1,5 +1,23 @@
 {{ define "content" }}
-  <h1>204: NO CONTENT</h1>
+  {{ if .Meta.User }}
+    <section class="v gap-1 align-self-stretch flex-1">
+      <p>You are logged in as <strong>{{ .Meta.User.Username }}</strong></p>
+      <section class="v flex-1">
+        <section class="h gap-1">
+          <a class="button contrast-medium padding-1 flex-1" href="/account">
+            <h3>File management</h3>
+            <h6>Account</h6>
+          </a>
+          <a class="button contrast-medium padding-1 flex-1" href="/account">
+            <h3>File management</h3>
+            <h6>Account</h6>
+          </a>
+        </section>
+      </section>
+    </section>
+  {{ else }}
+    <h1>204: NO CONTENT</h1>
+  {{ end }}
 {{ end }}
 
 {{ define "meta" }}

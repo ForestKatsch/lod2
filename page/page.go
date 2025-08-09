@@ -28,6 +28,14 @@ func dynamicFuncs() template.FuncMap {
 	// Get Sprig's default functions
 	funcs := sprig.FuncMap()
 
+	funcs["accessLevelToString"] = func(level auth.AccessLevel) string {
+		return auth.GetLevelName(level)
+	}
+
+	funcs["accessScopeToString"] = func(scope auth.AccessScope) string {
+		return auth.GetScopeName(scope)
+	}
+
 	funcs["hasRole"] = func(user *auth.UserInfo, scopeName string, levelName string) bool {
 		if user == nil {
 			return false
@@ -118,12 +126,15 @@ func loadPage(path string) (*template.Template, error) {
 }
 
 type MetaData struct {
-	Status   int
-	Referrer string
-	Now      time.Time
-	User     *auth.UserInfo
-	Roles    []auth.Role
-	Hostname string
+	Status          int
+	Referrer        string
+	Now             time.Time
+	User            *auth.UserInfo
+	Roles           []auth.Role
+	Hostname        string
+	ShowAdmin       bool
+	AllAccessScopes []auth.AccessScope
+	AllAccessLevels []auth.AccessLevel
 }
 
 // renders a single template
@@ -137,9 +148,10 @@ func Render(w http.ResponseWriter, r *http.Request, path string, data map[string
 	}
 
 	meta := MetaData{
-		Referrer: r.Referer(),
-		Now:      time.Now(),
-		Hostname: r.Host,
+		Referrer:  r.Referer(),
+		Now:       time.Now(),
+		Hostname:  r.Host,
+		ShowAdmin: auth.UserIsAdmin(r.Context()),
 	}
 
 	meta.User = auth.GetCurrentUserInfo(r.Context())
@@ -150,8 +162,8 @@ func Render(w http.ResponseWriter, r *http.Request, path string, data map[string
 	pageData["Meta"] = meta
 
 	pageData["Const"] = map[string]interface{}{
-		"AccessLevelNames": auth.AccessLevelToName,
-		"AccessScopeNames": auth.AccessScopeToName,
+		"AllAccessScopes": auth.AllAccessScopes,
+		"AllAccessLevels": auth.AllAccessLevels,
 	}
 
 	err = templ.ExecuteTemplate(w, path, pageData)

@@ -1,0 +1,44 @@
+<form
+  hx-put="/admin/users/{{ .User.UserId }}/roles"
+  hx-swap="outerHTML"
+  id="roles-form"
+  class="v gap-01"
+>
+  <div class="v paper table-container">
+    <table class="padding" id="{{ .Id }}">
+      <tbody>
+        {{ if .Roles }}
+          {{ range .Roles }}
+            {{ $role := . }}
+            <tr>
+              <td>{{ accessScopeToString $role.Scope }}</td>
+              <td class="no-padding">
+                <select
+                  name="{{ $role.Scope }}"
+                  class="access-level-select select"
+                >
+                  {{ range $.Const.AllAccessLevels }}
+                    <option
+                      value="{{ . }}"
+                      {{ if eq $role.Level . }}selected{{ end }}
+                    >
+                      {{ accessLevelToString . }}
+                    </option>
+                  {{ end }}
+                </select>
+              </td>
+            </tr>
+          {{ end }}
+        {{ else }}
+          <tr>
+            <td colspan="2" class="text-center muted">No roles assigned</td>
+          </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </div>
+  <div class="h gap-fill">
+    <span class="muted">{{ .Message }}</span>
+    <button class="button contrast-medium" hx-disabled-elt="this">Save</button>
+  </div>
+</form>

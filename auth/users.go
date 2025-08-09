@@ -40,7 +40,7 @@ func createUser(tx *sql.Tx, username string, password string, roles []Role) (str
 		return "", err
 	}
 
-	err = addRoles(tx, userId.String(), roles)
+	err = setRoles(tx, userId.String(), roles)
 
 	if err != nil {
 		return "", err
@@ -61,7 +61,7 @@ func createUserWithInvite(tx *sql.Tx, username string, password string, inviteId
 		return "", err
 	}
 
-	_, err = tx.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash, createdAt, inviteId) VALUES (?, ?, ?, ?, ?)", 
+	_, err = tx.Exec("INSERT INTO authUsers (userId, userName, userPasswordHash, createdAt, inviteId) VALUES (?, ?, ?, ?, ?)",
 		userId, username, passwordHash, time.Now().Unix(), inviteId)
 
 	if err != nil {
@@ -360,7 +360,7 @@ func AdminDeleteUser(userId string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	// Then mark the user as deleted
 	_, err = db.DB.Exec("UPDATE authUsers SET deleted = 1, userName = ? WHERE userId = ?", userId, userId)
 	return err

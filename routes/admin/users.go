@@ -57,9 +57,9 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"User":           user,
-		"Sessions":       sessions,
-		"CanDeleteUser":  currentUser != nil && user.UserId != currentUser.UserId,
+		"User":          user,
+		"Sessions":      sessions,
+		"CanDeleteUser": currentUser != nil && user.UserId != currentUser.UserId,
 	}
 
 	if user.InvitedByUserId != nil {
@@ -70,13 +70,12 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Add this on to do string handling in the backend instead of the template.
-	data["UserRoleStrings"] = auth.GetRoleStrings(user.Roles)
+	data["Roles"] = user.Roles
 
 	page.Render(w, r, "admin/users/user/index.html", data)
 }
 
-func postUserEndAllSessions(w http.ResponseWriter, r *http.Request) {
+func deleteUserSessions(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(auth.UserSessionInfo)
 	err := auth.AdminInvalidateAllSessions(user.UserId)
 
@@ -89,7 +88,7 @@ func postUserEndAllSessions(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("0"))
 }
 
-func postUserResetInvites(w http.ResponseWriter, r *http.Request) {
+func putUserResetInvites(w http.ResponseWriter, r *http.Request) {
 	invitesLeftString := r.URL.Query().Get("to")
 
 	if invitesLeftString == "" {
@@ -184,6 +183,36 @@ func postCreateUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/users/"+userId, http.StatusSeeOther)
 }
 
+func putUserRoles(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("user").(auth.UserSessionInfo)
+
+	r.ParseForm()
+
+	roles := []auth.Role{}
+
+	for _, scope := range auth.AllAccessScopes {
+		levelStr := r.Form.Get(strconv.Itoa(int(scope)))
+		level, err := strconv.Atoi(levelStr)
+		if err != nil {
+			page.RenderError(w, r, err)
+			return
+		}
+		roles = append(roles, auth.Role{Scope: scope, Level: auth.AccessLevel(level)})
+	}
+
+	err := auth.AdminSetUserRoles(user.UserId, roles)
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
+	page.Render(w, r, "admin/users/user/fragment-roles-table.html", map[string]interface{}{
+		"User":    user,
+		"Roles":   roles,
+		"Message": "User roles updated",
+	})
+}
+
 func userRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.AuthRoleRequiredMiddleware(auth.UserManagement))
@@ -195,8 +224,9 @@ func userRouter() chi.Router {
 	r.Route("/{userId}", func(r chi.Router) {
 		r.Use(userCtx)
 		r.Get("/", getUser)
-		r.Post("/end-all-sessions", postUserEndAllSessions)
-		r.Post("/reset-invites", postUserResetInvites)
+		r.Delete("/sessions", deleteUserSessions)
+		r.Put("/invites", putUserResetInvites)
+		r.Put("/roles", putUserRoles)
 		r.Delete("/delete", deleteUserDelete)
 	})
 

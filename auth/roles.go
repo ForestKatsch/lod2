@@ -19,15 +19,17 @@ const (
 )
 
 var NameToAccessLevel = map[string]AccessLevel{
-	"None": AccessLevelNone,
-	"View": View,
-	"Edit": Edit,
+	"No access": AccessLevelNone,
+	"View":      View,
+	"Edit":      Edit,
 }
 
-var AccessLevelToName = map[AccessLevel]string{
-	AccessLevelNone: "None",
-	View:            "View",
-	Edit:            "Edit",
+var AccessLevelToName = make(map[AccessLevel]string)
+
+var AllAccessLevels = []AccessLevel{
+	AccessLevelNone,
+	View,
+	Edit,
 }
 
 // AccessScope indicates what area the access applies to.
@@ -36,11 +38,20 @@ type AccessScope int
 const (
 	UserManagement AccessScope = iota
 	DangerousSql
+	Files
 )
 
+// This also defines the order of the scopes in the UI.
+var AllAccessScopes = []AccessScope{
+	DangerousSql,
+	UserManagement,
+	Files,
+}
+
 var NameToAccessScope = map[string]AccessScope{
-	"UserManagement": UserManagement,
-	"DangerousSql":   DangerousSql,
+	"User management": UserManagement,
+	"Database access": DangerousSql,
+	"Files":           Files,
 }
 
 var AccessScopeToName = make(map[AccessScope]string)
@@ -48,6 +59,11 @@ var AccessScopeToName = make(map[AccessScope]string)
 func init() {
 	for name, scope := range NameToAccessScope {
 		AccessScopeToName[scope] = name
+	}
+
+	// Populate the reverse map from the source NameToAccessLevel map.
+	for name, level := range NameToAccessLevel {
+		AccessLevelToName[level] = name
 	}
 }
 
@@ -65,6 +81,7 @@ type RoleString struct {
 var AllRoles = []Role{
 	{Level: Edit, Scope: UserManagement},
 	{Level: Edit, Scope: DangerousSql},
+	{Level: Edit, Scope: Files},
 }
 
 func GetScopeName(scope AccessScope) string {
@@ -100,16 +117,22 @@ func GetRoleStrings(roles []Role) []RoleString {
 // userId - foreign key to authUsers
 // level - the access level
 // scope - the access scope
-func addRoles(tx *sql.Tx, userId string, roles []Role) error {
+func setRoles(tx *sql.Tx, userId string, roles []Role) error {
 	for _, role := range roles {
-		if _, err := tx.Exec(`INSERT OR REPLACE INTO authRoles (userId, level, scope) VALUES (?, ?, ?)`, userId, role.Level, role.Scope); err != nil {
-			return err
+		if role.Level == AccessLevelNone {
+			if _, err := tx.Exec(`DELETE FROM authRoles WHERE userId = ? AND scope = ?`, userId, role.Scope); err != nil {
+				return err
+			}
+		} else {
+			if _, err := tx.Exec(`INSERT OR REPLACE INTO authRoles (userId, level, scope) VALUES (?, ?, ?)`, userId, role.Level, role.Scope); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-// GetUserRoles returns all roles assigned to the given user.
+// GetUserRoles returns roles for all scopes, with None for scopes not assigned to the user.
 func GetUserRoles(userId string) ([]Role, error) {
 	rows, err := db.DB.Query(`SELECT level, scope FROM authRoles WHERE userId = ?`, userId)
 	if err != nil {
@@ -117,18 +140,30 @@ func GetUserRoles(userId string) ([]Role, error) {
 	}
 	defer rows.Close()
 
-	roles := make([]Role, 0)
+	// Build a map of existing roles from database
+	existingRoles := make(map[AccessScope]AccessLevel)
 	for rows.Next() {
 		var level int
 		var scope int
 		if err := rows.Scan(&level, &scope); err != nil {
 			return nil, err
 		}
-		roles = append(roles, Role{Level: AccessLevel(level), Scope: AccessScope(scope)})
+		existingRoles[AccessScope(scope)] = AccessLevel(level)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
+	// Build result with all scopes, using None for missing ones
+	roles := make([]Role, 0, len(AllAccessScopes))
+	for _, scope := range AllAccessScopes {
+		level, exists := existingRoles[scope]
+		if !exists {
+			level = AccessLevelNone
+		}
+		roles = append(roles, Role{Level: level, Scope: scope})
+	}
+
 	return roles, nil
 }
 
@@ -163,4 +198,42 @@ func GetRoleMap(roles []Role) map[AccessScope]AccessLevel {
 		roleMap[role.Scope] = role.Level
 	}
 	return roleMap
+}
+
+func UserIsAdmin(ctx context.Context) bool {
+	userInfo := GetCurrentUserInfo(ctx)
+	if userInfo == nil {
+		return false
+	}
+
+	if userInfo.Roles == nil {
+		return false
+	}
+
+	if UserHasRole(userInfo.Roles, UserManagement, View) {
+		return true
+	}
+
+	return false
+}
+
+func AdminSetUserRoles(userId string, roles []Role) error {
+	tx, err := db.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	err = setRoles(tx, userId, roles)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

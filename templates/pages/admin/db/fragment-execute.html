@@ -1,27 +1,27 @@
 {{ if .Error }}
-<div class="alert">{{ .Error }}</div>
+  <div class="alert">{{ .Error }}</div>
 {{ else if not .Rows }}
-<div class="alert info">no rows returned</div>
+  <div class="alert info">no rows returned</div>
 {{ else }}
-<h3>Results</h3>
-<div class="v paper table_container">
-  <table class="data padding">
-    <thead>
-      <tr>
-        {{ range $index, $column := .Columns }}
-        <th>{{ $column }}</th>
+  <h3>Results</h3>
+  <div class="v paper table-container">
+    <table class="data padding">
+      <thead>
+        <tr>
+          {{ range $index, $column := .Columns }}
+            <th>{{ $column }}</th>
+          {{ end }}
+        </tr>
+      </thead>
+      <tbody>
+        {{ range $index, $row := .Rows }}
+          <tr>
+            {{ range $value := $row }}
+              <td>{{ $value }}</td>
+            {{ end }}
+          </tr>
         {{ end }}
-      </tr>
-    </thead>
-    <tbody>
-      {{ range $index, $row := .Rows }}
-      <tr>
-        {{ range $value := $row }}
-        <td>{{ $value }}</td>
-        {{ end }}
-      </tr>
-      {{ end }}
-    </tbody>
-  </table>
-</div>
+      </tbody>
+    </table>
+  </div>
 {{ end }}

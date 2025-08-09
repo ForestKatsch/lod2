@@ -26,6 +26,9 @@
       <hr />
       <nav class="h">
         {{ if .Meta.User }}
+          {{ if .Meta.ShowAdmin }}
+            <a href="/admin" class="button">Admin</a>
+          {{ end }}
           <a href="/account" class="button" title="{{ .Meta.User.Username }}"
             >Account</a
           >

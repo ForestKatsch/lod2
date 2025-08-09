@@ -1,5 +1,13 @@
 {{ define "title" }}Manage user: {{ .User.Username }}{{ end }}
 
+{{ define "meta" }}
+  <style>
+    .access-level-select {
+      width: 100%;
+    }
+  </style>
+{{ end }}
+
 {{ define "content" }}
   <header class="h">
     <nav class="breadcrumbs">
@@ -10,7 +18,7 @@
   </header>
 
   <section class="v gap-2">
-    <div class="v paper table_container">
+    <div class="v paper table-container">
       <table class="padding">
         <tr>
           <td>User ID</td>
@@ -43,24 +51,7 @@
       <header class="h gap-fill">
         <h3>Roles</h3>
       </header>
-      <div class="v paper table_container">
-        <table class="padding">
-          <tbody>
-            {{ if .UserRoleStrings }}
-              {{ range .UserRoleStrings }}
-                <tr>
-                  <td>{{ .Scope }}</td>
-                  <td><strong>{{ .Level }}</strong></td>
-                </tr>
-              {{ end }}
-            {{ else }}
-              <tr>
-                <td colspan="2" class="text-center muted">No roles assigned</td>
-              </tr>
-            {{ end }}
-          </tbody>
-        </table>
-      </div>
+      {{ template "components/roles-table.html" . }}
     </section>
 
     <section class="v gap-01">
@@ -68,14 +59,13 @@
         <h3>Sessions</h3>
         <button
           class="button contrast-medium"
-          hx-post="/admin/users/{{ .User.UserId }}/end-all-sessions"
+          hx-delete="/admin/users/{{ .User.UserId }}/sessions"
           hx-confirm="End all sessions and require '{{ .User.Username }}' to login again? It may take a few minutes until all sessions are ended."
-          disabled="{{ not .Sessions }}"
         >
           End all
         </button>
       </header>
-      <div class="v paper table_container">
+      <div class="v paper table-container">
         <table class="data padding">
           <thead>
             <tr>
@@ -141,8 +131,8 @@
         </header>
         <div class="alert v gap-1 padding-1">
           <p>
-            Deleting a user will hide them from all admin interfaces but preserve
-            their data.
+            Deleting a user will hide them from all admin interfaces but
+            preserve their data.
           </p>
           <button
             type="submit"

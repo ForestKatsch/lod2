@@ -1,22 +1,26 @@
 {{ define "title" }}My account{{ end }}
 
 {{ define "content" }}
-<header class="h gap-fill">
-  <h1>{{ .Meta.User.Username }}</h1>
-  <a class="button contrast-medium" href="/auth/logout">Logout</a>
-</header>
-<section class="v gap-1">
-  <a class="link" href="/account/change-password">Change password</a>
-  <hr />
-  <a class="link" hx-get="/account/invite-link" hx-swap="outerHTML">Share invite link</a>
-  <hr />
+  <header class="h gap-fill">
+    <h1>{{ .Meta.User.Username }}</h1>
+    <a class="button contrast-medium" href="/auth/logout">Logout</a>
+  </header>
+  <section class="v gap-1">
+    <a class="link" href="/account/change-password">Change password</a>
+    <hr />
+    <a class="link" hx-get="/account/invite-link" hx-swap="outerHTML"
+      >Share invite link</a
+    >
+    <hr />
 
-  <div class="v paper padding-1 gap-1">
-    {{ if hasRole .Meta.User "UserManagement" "View" }}
-    <a class="link" href="/admin/">Administrator settings</a>
+    {{ if .Meta.ShowAdmin }}
+      <div class="v paper padding-1 gap-1">
+        {{ if hasRole .Meta.User "UserManagement" "View" }}
+          <a class="link" href="/admin/">Administrator settings</a>
+        {{ end }}
+      </div>
     {{ end }}
-  </div>
-</section>
+  </section>
 {{ end }}
 
 {{ template "layout/main.html" . }}

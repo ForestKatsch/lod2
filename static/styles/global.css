@@ -235,37 +235,41 @@ body {
 
 /* button */
 
-.button {
+.button,
+.select {
   display: block;
   padding: 0.3rem 1rem;
 
-  &:hover:not([disabled]) {
-    background: var(--fg);
+  &:not(.select):hover:not([disabled]) {
+    background-color: var(--fg);
     color: var(--bg);
+  }
+
+  &:hover:not([disabled]) {
     cursor: pointer;
   }
 
-  &:focus-visible:not([disabled]) {
-    background: var(--focus);
+  &:not(.select):focus-visible:not([disabled]) {
+    background-color: var(--focus);
   }
 
   &.contrast-high {
-    background: var(--fg);
+    background-color: var(--fg);
     color: var(--bg);
   }
 
   &.contrast-medium {
     outline: 1px solid var(--fg);
     box-shadow: var(--shadow);
-    background: var(--bg);
+    background-color: var(--bg);
 
     &:hover:not([disabled]) {
-      background: var(--fg);
+      background-color: var(--fg);
       color: var(--bg);
     }
 
-    &:focus-visible:not([disabled]) {
-      background: var(--focus);
+    &:not(.select):focus-visible:not([disabled]) {
+      background-color: var(--focus);
     }
   }
 
@@ -283,7 +287,7 @@ body {
     }
 
     &.contrast-high {
-      background: var(--error);
+      background-color: var(--error);
       color: var(--bg);
     }
   }
@@ -330,9 +334,20 @@ textarea {
   min-height: 4rem;
 }
 
+select {
+  appearance: none;
+
+  background-image: url("data:image/svg+xml;utf8,<svg width='12' height='6' viewBox='0 0 12 6' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M6 5L2 1H10L6 5Z' fill='black'/></svg>");
+  background-size: 12px 6px;
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+
+  padding-right: 2rem !important;
+}
+
 /* table */
 
-.table_container {
+.table-container {
   overflow-x: auto;
 }
 
@@ -390,8 +405,15 @@ table {
   }
 
   &.padding td,
-  &.padding th {
+  &.padding th,
+  th .padding,
+  td .padding {
     padding: 0.5rem 1rem;
+  }
+
+  th.no-padding,
+  td.no-padding {
+    padding: 0;
   }
 }
 
