@@ -42,6 +42,11 @@
 
     a {
       text-decoration: underline;
+
+      &:focus-visible {
+        background-color: var(--focus);
+        color: var(--focus-fg);
+      }
     }
 
     a + a::before {
