@@ -47,14 +47,38 @@ func VerifyPath(untrustedPath string) (string, error) {
 	// Normalize Windows-style backslashes for consistency
 	normalizedPath := strings.ReplaceAll(normalizedInput, "\\", "/")
 
-	// STRICT REJECTION: Any path containing traversal patterns is rejected immediately
-	// This prevents all directory traversal attacks, even if they would resolve within bounds
-	if strings.Contains(normalizedPath, "../") || strings.Contains(normalizedPath, "/..") {
-		return "", errors.New("path contains directory traversal patterns")
-	}
-
-	// Clean the path to resolve . and .. components (should be safe now)
+	// Clean the path to resolve . and .. components
 	cleanPath := filepath.Clean(normalizedPath)
+	
+	// Check if the cleaned path tries to escape the root directory
+	// After cleaning, any remaining ".." at the start means it would escape
+	if !strings.HasPrefix(cleanPath, "/") || cleanPath == ".." || strings.HasPrefix(cleanPath, "../") {
+		return "", errors.New("path resolves outside storage root directory")
+	}
+	
+	// Special case: if the clean path is just "." it should become "/"
+	if cleanPath == "." {
+		cleanPath = "/"
+	}
+	
+	// IMPORTANT: Check if the input path tried to escape by simulating path traversal
+	// Split the path and simulate directory navigation
+	components := strings.Split(strings.Trim(normalizedPath, "/"), "/")
+	currentDepth := 0 // Start at root level (depth 0)
+	
+	for _, comp := range components {
+		if comp == "" || comp == "." {
+			continue // Skip empty and current directory references
+		} else if comp == ".." {
+			currentDepth-- // Go up one level
+			if currentDepth < 0 {
+				// We've gone above the root - this is an escape attempt
+				return "", errors.New("path resolves outside storage root directory")
+			}
+		} else {
+			currentDepth++ // Go down into a directory
+		}
+	}
 
 	// Remove trailing slash if present, except for root path "/"
 	if len(cleanPath) > 1 && strings.HasSuffix(cleanPath, "/") {

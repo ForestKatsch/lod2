@@ -64,6 +64,8 @@
       }
 
       function uploadFile(file, targetPath = '{{ .Path }}') {
+        q(".empty-directory").remove();
+
         const eRow = e(q("#file-table > tbody"), "tr", "upload-file");
         const eName = e(eRow, "td", "file-name");
         const eSize = e(eRow, "td", "file-size");
@@ -133,7 +135,7 @@
         console.log('Moving file:', sourcePath, 'to:', destPath);
 
         // Use URL parameters instead of form data for PATCH
-        const url = new URL(sourcePath, window.location.origin);
+        const url = new URL(sourcePath); // sourcePath is already a full URL
         url.searchParams.set('dest', destPath);
 
         const response = await fetch(url.toString(), {
