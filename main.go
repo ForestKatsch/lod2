@@ -25,6 +25,10 @@ import (
 func main() {
 	config.Init(true)
 	db.Init()
+	
+	// Run global migrations before initializing other packages
+	db.RunMigrations()
+	
 	auth.Init()
 
 	// The primary router.

@@ -33,7 +33,6 @@ func Init() {
 
 	log.Printf("db opened at '%s'", dbPath)
 
-	handleMigrations(db)
-
 	DB = db
 }
+

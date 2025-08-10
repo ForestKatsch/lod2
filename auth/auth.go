@@ -8,8 +8,7 @@ import (
 
 func Init() {
 	initTokens()
-
-	migrate()
+	PostMigrationSetup()
 }
 
 func SetTokenCookies(w http.ResponseWriter, r *http.Request, username string, password string) error {
