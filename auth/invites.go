@@ -105,17 +105,6 @@ func GetUserInviteIdTx(tx *sql.Tx, userId string) (string, error) {
 	return inviteId, nil
 }
 
-// Marks an invite as consumed by a specific user
-func AdminConsumeInvite(inviteId string, consumedByUserId string) error {
-	_, err := db.DB.Exec(`
-		UPDATE authInvites 
-		SET consumedByUserId = ?, consumedAt = ?
-		WHERE inviteId = ? AND consumedByUserId IS NULL`,
-		consumedByUserId, time.Now().Unix(), inviteId)
-
-	return err
-}
-
 // Marks an invite as consumed by a specific user within a transaction
 func AdminConsumeInviteTx(tx *sql.Tx, inviteId string, consumedByUserId string) error {
 	_, err := tx.Exec(`
