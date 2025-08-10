@@ -68,7 +68,7 @@ func MoveFile(sourcePath, destPath string) error {
 func DeleteFile(path string) error {
 	// Generate ISO 8601 timestamp + random suffix for unique trash filename
 	trashId, _ := typeid.WithPrefix("trash")
-	trashPath := fmt.Sprintf("/.trash/%s%s", trashId.String(), path)
+	trashPath := fmt.Sprintf("/.trash/%s/%s", trashId.String(), path)
 
 	dir := filepath.Dir(trashPath)
 	log.Printf("creating directory %s (moving file %s to %s)", dir, path, trashPath)
