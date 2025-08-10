@@ -1,1 +1,32 @@
-<div class="alert info align-self-center">haha im a file! :D</div>
+<section class="v gap-2">
+  <div class="v paper table-container">
+    <table class="padding">
+      <tr>
+        <td>Size</td>
+        <td>{{ .Size | humanizeBytes }}</td>
+      </tr>
+      <tr>
+        <td>Last modified</td>
+        <td>
+          <time datetime="{{ .User.CreatedAt }}"
+            >{{ .User.CreatedAt | date "2006-01-02 15:04:05" }}</time
+          >
+        </td>
+      </tr>
+      <tr>
+        <td>MIME type (detected)</td>
+        <td>{{ .Type }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="v paper">
+    {{ if hasPrefix "image/" .Type }}
+      <img src="/files/{{ .Path }}?raw=true" alt="{{ .Name }}" />
+    {{ else }}
+      <div class="alert info">
+        <p>This file is not an image.</p>
+      </div>
+    {{ end }}
+  </div>
+</section>

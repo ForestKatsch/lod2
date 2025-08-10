@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -77,4 +78,14 @@ func DeleteFile(path string) error {
 	log.Printf("moving file %s to %s", path, trashPath)
 
 	return MoveFile(path, trashPath)
+}
+
+func ServeFile(w http.ResponseWriter, r *http.Request, path string) {
+	filesystemPath, err := DangerousFilesystemPath(path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.ServeFile(w, r, filesystemPath)
 }

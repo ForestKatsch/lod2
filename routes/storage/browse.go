@@ -3,13 +3,26 @@ package storage
 import (
 	"lod2/page"
 	"lod2/storage"
+	"mime"
 	"net/http"
+	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
 )
 
 func renderBrowseWithTemplate(w http.ResponseWriter, r *http.Request, path string, template string) {
 	path, err := storage.VerifyPath(path)
+
+	// the name of the file or directory as it appears in the UI.
+	displayName := filepath.Base(path)
+
+	// Check if we should serve raw file content
+	raw := r.URL.Query().Get("raw") == "true"
+
+	if raw {
+		storage.ServeFile(w, r, path)
+		return
+	}
 
 	if err != nil {
 		page.RenderError(w, r, err)
@@ -19,6 +32,7 @@ func renderBrowseWithTemplate(w http.ResponseWriter, r *http.Request, path strin
 	renderError := func(message string) {
 		page.Render(w, r, "storage/index.html", map[string]interface{}{
 			"Path":            path,
+			"Name":            displayName,
 			"PathBreadcrumbs": storage.GetPathBreadcrumbs(path),
 			"ErrorMessage":    message,
 		})
@@ -43,6 +57,7 @@ func renderBrowseWithTemplate(w http.ResponseWriter, r *http.Request, path strin
 
 	data := map[string]interface{}{
 		"Path":            path,
+		"Name":            displayName,
 		"PathBreadcrumbs": storage.GetPathBreadcrumbs(path),
 		"IsDirectory":     isDirectory,
 	}
@@ -56,7 +71,18 @@ func renderBrowseWithTemplate(w http.ResponseWriter, r *http.Request, path strin
 
 		data["Entries"] = entries
 	} else {
-		// TODO
+		metadata, err := storage.GetMetadata(path)
+		if err != nil {
+			renderError("failed to get file metadata")
+			return
+		}
+
+		data["Size"] = metadata.Size
+		data["LastModified"] = metadata.LastModified
+
+		// Preview information.
+
+		data["Type"] = mime.TypeByExtension(filepath.Ext(displayName))
 	}
 
 	page.Render(w, r, template, data)

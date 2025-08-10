@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-
 // All public functions operate on _unsafe paths_ provided by the user. All functions
 // here are expected to verify paths and return errors if appropriate.
 func Exists(path string) (bool, error) {
@@ -114,4 +113,23 @@ func ListContents(path string) ([]Entry, error) {
 	})
 
 	return results, nil
+}
+
+func GetMetadata(path string) (Entry, error) {
+	filesystemPath, err := DangerousFilesystemPath(path)
+	if err != nil {
+		return Entry{}, err
+	}
+
+	fi, err := os.Stat(filesystemPath)
+	if err != nil {
+		return Entry{}, err
+	}
+
+	return Entry{
+		Name:         fi.Name(),
+		IsDirectory:  fi.IsDir(),
+		Size:         fi.Size(),
+		LastModified: fi.ModTime(),
+	}, nil
 }
