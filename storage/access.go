@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+
 // All public functions operate on _unsafe paths_ provided by the user. All functions
 // here are expected to verify paths and return errors if appropriate.
 func Exists(path string) (bool, error) {
@@ -78,9 +79,19 @@ func ListContents(path string) ([]Entry, error) {
 		return nil, err
 	}
 
-	results := make([]Entry, len(entries))
+	// Filter out .trash directory only at root level
+	var filteredEntries []os.DirEntry
+	for _, entry := range entries {
+		// Hide .trash only when we're at the root directory
+		if path == "/" && entry.Name() == ".trash" {
+			continue
+		}
+		filteredEntries = append(filteredEntries, entry)
+	}
 
-	for i, entry := range entries {
+	results := make([]Entry, len(filteredEntries))
+
+	for i, entry := range filteredEntries {
 		info, err := entry.Info()
 		if err != nil {
 			return nil, err

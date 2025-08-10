@@ -95,6 +95,62 @@ func putCreateDirectory(w http.ResponseWriter, r *http.Request) {
 	renderFileTable(w, r, parentDirectory)
 }
 
+func patchMovePath(w http.ResponseWriter, r *http.Request) {
+	sourcePath := chi.URLParam(r, "*")
+	sourcePath, err := utils.UrlDecode(sourcePath)
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
+	// Get destination from URL parameters
+	destPath := r.URL.Query().Get("dest")
+	if destPath == "" {
+		page.RenderStatus(w, r, http.StatusBadRequest, "dest parameter required")
+		return
+	}
+
+	destPath, err = utils.UrlDecode(destPath)
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
+	// If destPath is a directory, append the filename
+	destExists, err := storage.Exists(destPath)
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
+	if destExists {
+		destIsDir, err := storage.IsDirectory(destPath)
+		if err != nil {
+			page.RenderError(w, r, err)
+			return
+		}
+
+		if destIsDir {
+			// Move into directory - append source filename
+			sourceFilename := filepath.Base(sourcePath)
+			destPath = filepath.Join(destPath, sourceFilename)
+		} else {
+			page.RenderStatus(w, r, http.StatusConflict, "destination file already exists")
+			return
+		}
+	}
+
+	err = storage.MoveFile(sourcePath, destPath)
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
+	// Return updated file table for the source directory
+	sourceParentDirectory := filepath.Dir(sourcePath)
+	renderFileTable(w, r, sourceParentDirectory)
+}
+
 func deletePath(w http.ResponseWriter, r *http.Request) {
 	deletePath := chi.URLParam(r, "*")
 	deletePath, err := utils.UrlDecode(deletePath)

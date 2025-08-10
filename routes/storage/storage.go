@@ -14,6 +14,7 @@ func Router() chi.Router {
 	r.Get("/*", getBrowsePath)
 	r.Post("/*", postUploadPath)
 	r.Put("/*", putCreateDirectory)
+	r.Patch("/*", patchMovePath)
 	r.Delete("/*", deletePath)
 
 	return r

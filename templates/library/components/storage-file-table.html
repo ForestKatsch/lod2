@@ -8,7 +8,7 @@
   </thead>
   <tbody>
     {{ if not (eq .Path "/") }}
-      <tr>
+      <tr class="directory-drop-target" data-path="{{ .Path }}/..">
         <td colspan="3">
           <a href="/files{{ .Path }}/.." class="link"><strong>..</strong></a>
         </td>
@@ -16,7 +16,7 @@
     {{ end }}
     {{ if .Entries }}
       {{ range .Entries }}
-        <tr>
+        <tr{{ if .IsDirectory }} class="directory-drop-target" data-path="{{ $.Path }}/{{ .Name }}"{{ end }}>
           <td
             {{ if .IsDirectory }}
               colspan="2"
