@@ -44,12 +44,6 @@ func VerifyPath(untrustedPath string) (string, error) {
 		normalizedInput = "/" + normalizedInput
 	}
 
-	// Get the absolute storage root path
-	storageRoot, err := filepath.Abs(config.Config.StoragePath)
-	if err != nil {
-		return "", err
-	}
-
 	// Normalize Windows-style backslashes for consistency
 	normalizedPath := strings.ReplaceAll(normalizedInput, "\\", "/")
 
@@ -62,31 +56,9 @@ func VerifyPath(untrustedPath string) (string, error) {
 	// Clean the path to resolve . and .. components (should be safe now)
 	cleanPath := filepath.Clean(normalizedPath)
 
-	// Join storage root with the clean path (treating it as absolute within storage)
-	resolvedPath := filepath.Join(storageRoot, cleanPath)
-
-	// Get the absolute path of the resolved result
-	absoluteResolved, err := filepath.Abs(resolvedPath)
-	if err != nil {
-		return "", err
-	}
-
-	// Get absolute storage root for comparison
-	absoluteStorageRoot, err := filepath.Abs(storageRoot)
-	if err != nil {
-		return "", err
-	}
-
-	// Final security check: ensure resolved path is within storage root
-	// This should always pass now due to earlier checks, but defense in depth
-	if !strings.HasPrefix(absoluteResolved, absoluteStorageRoot) {
-		return "", errors.New("path resolves outside storage root directory")
-	}
-
-	// Additional check for exact match or proper subpath
-	if absoluteResolved != absoluteStorageRoot &&
-		!strings.HasPrefix(absoluteResolved, absoluteStorageRoot+string(filepath.Separator)) {
-		return "", errors.New("path resolves outside storage root directory")
+	// Remove trailing slash if present, except for root path "/"
+	if len(cleanPath) > 1 && strings.HasSuffix(cleanPath, "/") {
+		cleanPath = strings.TrimSuffix(cleanPath, "/")
 	}
 
 	// Always return the verified clean path with leading slash
