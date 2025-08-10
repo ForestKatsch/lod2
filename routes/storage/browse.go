@@ -1,8 +1,10 @@
 package storage
 
 import (
+	"fmt"
 	"lod2/page"
 	"lod2/storage"
+	"lod2/utils"
 	"mime"
 	"net/http"
 	"path/filepath"
@@ -11,10 +13,18 @@ import (
 )
 
 func renderBrowseWithTemplate(w http.ResponseWriter, r *http.Request, path string, template string) {
-	path, err := storage.VerifyPath(path)
+	path, err := utils.UrlDecode(path)
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
+
+	path, err = storage.VerifyPath(path)
 
 	// the name of the file or directory as it appears in the UI.
 	displayName := filepath.Base(path)
+
+	fmt.Println(path)
 
 	// Check if we should serve raw file content
 	raw := r.URL.Query().Get("raw") == "true"

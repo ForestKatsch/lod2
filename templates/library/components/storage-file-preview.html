@@ -20,9 +20,15 @@
     </table>
   </div>
 
-  <div class="v paper">
+  <div class="v paper storage-preview">
     {{ if hasPrefix "image/" .Type }}
-      <img src="/files/{{ .Path }}?raw=true" alt="{{ .Name }}" />
+      <a href="/files{{ .Path }}?raw=true" class="preview-link" target="_blank">
+        <img
+          src="/files{{ .Path }}?raw=true"
+          alt="{{ .Name }}"
+          class="preview-image"
+        />
+      </a>
     {{ else }}
       <div class="alert info">
         <p>This file is not an image.</p>
