@@ -95,7 +95,9 @@
           if (xhr.status >= 200 && xhr.status < 300) {
             eName.innerHTML = "";
             const eLink = e(eName, "a", "link file-link");
-            eLink.href = `/files{{ $.Path }}${file.name}`;
+            // Properly encode the URL path
+            const encodedPath = '{{ $.Path }}'.split('/').map(p => p ? encodeURIComponent(p) : '').join('/');
+            eLink.href = `/files${encodedPath}/${encodeURIComponent(file.name)}`;
             eLink.textContent = file.name;
 
             eSize.textContent = humanizeBytes(file.size);
@@ -134,11 +136,15 @@
       async function moveFile(sourcePath, destPath) {
         console.log('Moving file:', sourcePath, 'to:', destPath);
 
-        // Use URL parameters instead of form data for PATCH
-        const url = new URL(sourcePath); // sourcePath is already a full URL
-        url.searchParams.set('dest', destPath);
+        // Extract just the pathname from the full URL and construct the API URL
+        const sourceUrl = new URL(sourcePath);
+        const apiPath = sourceUrl.pathname; // This gives us just /files/path/to/file.ext
 
-        const response = await fetch(url.toString(), {
+        // Create the PATCH request URL
+        const patchUrl = new URL(apiPath, window.location.origin);
+        patchUrl.searchParams.set('dest', destPath);
+
+        const response = await fetch(patchUrl.toString(), {
           method: "PATCH"
         });
 
@@ -383,17 +389,6 @@
         >
       {{ end }}
     </nav>
-    <form class="h gap-1" id="create-directory-form" onsubmit="return false;">
-      <input
-        type="text"
-        name="directoryName"
-        class="inset"
-        placeholder="Directory name"
-      />
-      <button class="button contrast-medium taller" hx-disable-elt="this">
-        Create
-      </button>
-    </form>
   </header>
 
   {{ if .ErrorMessage }}
@@ -405,21 +400,38 @@
   {{ else }}
 
     {{ if .IsDirectory }}
-      <div class="table-container paper">
-        {{ template "components/storage-file-table.html" . }}
-      </div>
-      <div id="upload-drop-zone" class="drop-zone">
-        <div class="content">
-          <h3>Drag and drop files here to upload</h3>
+      <section class="v gap-1">
+        <div class="table-container paper">
+          {{ template "components/storage-file-table.html" . }}
         </div>
-      </div>
-      <div id="trash-drop-zone" class="drop-zone">
-        <div class="content">
-          <h3>Drop here to delete</h3>
+        <form
+          class="h gap-1 align-self-end"
+          id="create-directory-form"
+          onsubmit="return false;"
+        >
+          <input
+            type="text"
+            name="directoryName"
+            class="inset"
+            placeholder="Directory name"
+          />
+          <button class="button contrast-medium taller" hx-disable-elt="this">
+            Create
+          </button>
+        </form>
+        <div id="upload-drop-zone" class="drop-zone">
+          <div class="content">
+            <h3>Drag and drop files here to upload</h3>
+          </div>
         </div>
-      </div>
+        <div id="trash-drop-zone" class="drop-zone">
+          <div class="content">
+            <h3>Drop here to delete</h3>
+          </div>
+        </div>
+      </section>
     {{ else }}
-      <div class="alert info align-self-center">haha im a file! :D</div>
+      {{ template "components/storage-file-preview.html" . }}
     {{ end }}
 
   {{ end }}

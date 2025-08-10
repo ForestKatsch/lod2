@@ -22,7 +22,7 @@
               colspan="2"
             {{ end }}
           >
-            <a href="/files{{ $.Path }}/{{ .Name }}" class="link file-link"
+            <a href="/files{{ $.Path }}/{{ .Name | urlPathEscape }}" class="link file-link"
               >{{ if .IsDirectory }}
                 <strong>{{ .Name }}</strong>
               {{ else }}

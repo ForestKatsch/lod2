@@ -6,6 +6,7 @@ import (
 	"lod2/utils"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -58,6 +59,10 @@ func dynamicFuncs() template.FuncMap {
 			return false
 		}
 		return auth.UserHasRole(user.Roles, scope, level)
+	}
+
+	funcs["urlPathEscape"] = func(s string) string {
+		return url.PathEscape(s)
 	}
 
 	return funcs
