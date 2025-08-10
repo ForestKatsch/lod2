@@ -24,6 +24,7 @@ function copyToClipboard(text, message) {
   sendToast(message ?? "Copied to clipboard");
 }
 
+// query selector (single)
 function q(selector) {
   return document.querySelector(selector);
 }
@@ -32,6 +33,7 @@ function qAll(selector) {
   return document.querySelectorAll(selector);
 }
 
+// equivalent to clsx.
 function c(classes) {
   if (Array.isArray(classes)) {
     return classes.flatMap((i) => c(i)).join(" ");

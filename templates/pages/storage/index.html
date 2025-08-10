@@ -2,13 +2,16 @@
 
 {{ define "meta" }}
   <style>
-    table.data {
+    #file-table {
       table-layout: fixed;
       width: 100%;
+      min-width: 40rem;
     }
 
     .file-name {
       width: 60%;
+
+      overflow: hidden;
     }
 
     .file-size {
@@ -18,13 +21,25 @@
     .file-last-modified {
       width: 25%;
     }
+
+    #trash-drop-zone {
+      position: fixed;
+      right: 0.5rem;
+      bottom: 0.5rem;
+      padding: 2rem;
+    }
   </style>
   <script>
     function init() {
-      const dropZone = q("#upload-drop-zone");
+      const uploadZone = q("#upload-drop-zone");
+      const trashZone = q("#trash-drop-zone");
 
       function warnWhenLeaving() {
         return "File upload will be cancelled.";
+      }
+
+      function updateFileTable(html) {
+        htmx.swap("#file-table", html, {swapStyle: 'outerHTML'});
       }
 
       function lmaoXhrInTheYearOfOurLord2025(file, progressCallback) {
@@ -66,6 +81,8 @@
         const eSize = e(eRow, "td", "file-size");
         const eLastModified = e(eRow, "td", "file-last-modified");
 
+        let draggingFile = null;
+
         eName.textContent = file.name;
         eSize.textContent = `starting...`;
         eLastModified.textContent = "uploading...";
@@ -83,7 +100,7 @@
 
         response.then(() => {
           eName.innerHTML = "";
-          const eLink = e(eName, "a", "link");
+          const eLink = e(eName, "a", "link file-link");
           eLink.href = `/files{{ $.Path }}${file.name}`;
           eLink.textContent = file.name;
 
@@ -98,40 +115,98 @@
         });
       }
 
-      function handleStartDrag(e) {
-        if (e.dataTransfer.files.length === 0) {
-          return;
+      async function deleteFile(path) {
+        const response = await fetch(path, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          updateFileTable(await response.text());
+        } else {
+          sendToast(`Deletion failed: ${response.statusText}`);
         }
+      }
 
-        dropZone.classList.add("visible");
+      function handleDragover(e) {
+        let zone = draggingFile != null ? trashZone : uploadZone;
+
+        setTimeout(() => {
+          zone.classList.add("visible");
+        }, 0);
         e.preventDefault();
       }
 
-      function cancelDrop(e) {
-        dropZone.classList.remove("visible");
-        e.preventDefault();
+      function cancelDrop(zone) {
+        return (e) => {
+          zone.classList.remove("visible");
+          e.preventDefault();
+        };
       }
 
-      function handleDrop(e) {
-        dropZone.classList.remove("visible");
+      function handleUploadDrop(e) {
+        uploadZone.classList.remove("visible");
+
         if (e.dataTransfer.files.length > 0) {
           uploadFile(e.dataTransfer.files[0]);
         }
+
         e.preventDefault();
       }
 
-      function handleLeaveOrEnd(e) {
-        if (e.target.classList.contains("drop-zone")) {
-          e.target.classList.remove("visible");
+      function handleTrashDrop(e) {
+        trashZone.classList.remove("visible");
+
+        if (draggingFile === null) {
+          return;
         }
+
+        const href = draggingFile.href;
+        deleteFile(href);
+
+        draggingFile = null;
+        e.preventDefault();
       }
 
-      dropZone.addEventListener("drop", handleDrop);
+      function allowDrop(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+      }
 
-      document.addEventListener("dragover", handleStartDrag);
-      dropZone.addEventListener("dragleave", cancelDrop);
-      dropZone.addEventListener("dragend", cancelDrop);
-      document.addEventListener("dragend", cancelDrop);
+      document.addEventListener("dragover", handleDragover);
+
+      uploadZone.addEventListener("dragleave", cancelDrop(uploadZone));
+      uploadZone.addEventListener("dragend", cancelDrop(uploadZone));
+      uploadZone.addEventListener("dragstart", allowDrop);
+
+      trashZone.addEventListener("dragleave", cancelDrop(trashZone));
+      trashZone.addEventListener("dragend", cancelDrop(trashZone));
+      trashZone.addEventListener("dragstart", allowDrop);
+
+      uploadZone.addEventListener("drop", handleUploadDrop);
+      trashZone.addEventListener("drop", handleTrashDrop);
+
+      q("#create-directory-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const directoryName = formData.get("directoryName");
+        try {
+          const response = await fetch(`/files{{ .Path }}/${directoryName}`, {
+            method: "PUT",
+          });
+
+          updateFileTable(await response.text());
+
+          q("#create-directory-form").reset();
+        } catch (e) {
+          sendToast(`Directory creation failed: ${e.message}`);
+        }
+      });
+
+        document.addEventListener("dragstart", (e) => {
+          const element = e.target.closest(".file-link");
+          draggingFile = element;
+          e.dataTransfer.effectAllowed = "move";
+        });
     }
 
     document.addEventListener("DOMContentLoaded", init);
@@ -139,13 +214,25 @@
 {{ end }}
 
 {{ define "content" }}
-  <header class="h">
+  <header class="h justify-between">
     <nav class="breadcrumbs">
       <a href="/files/">Files</a>
+
       {{ range .PathBreadcrumbs }}
         <a href="/files/{{ .Path }}">{{ .Component }}</a>
       {{ end }}
     </nav>
+    <form class="h gap-1" id="create-directory-form" onsubmit="return false;">
+      <input
+        type="text"
+        name="directoryName"
+        class="inset"
+        placeholder="Directory name"
+      />
+      <button class="button contrast-medium taller" hx-disable-elt="this">
+        Create
+      </button>
+    </form>
   </header>
 
   {{ if .ErrorMessage }}
@@ -158,63 +245,16 @@
 
     {{ if .IsDirectory }}
       <div class="table-container paper">
-        <table id="file-table" class="data padding">
-          <thead>
-            <tr>
-              <th class="file-name">Name</th>
-              <th class="file-size">Size</th>
-              <th class="file-last-modified">Last modified</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{ if not (eq .Path "/") }}
-              <tr>
-                <td colspan="3">
-                  <a href="/files{{ .Path }}/.." class="link"
-                    ><strong>..</strong></a
-                  >
-                </td>
-              </tr>
-            {{ end }}
-            {{ if .Entries }}
-              {{ range .Entries }}
-                <tr>
-                  <td
-                    {{ if .IsDirectory }}
-                      colspan="2"
-                    {{ end }}
-                  >
-                    <a href="/files{{ $.Path }}{{ .Name }}" class="link"
-                      >{{ if .IsDirectory }}
-                        <strong>{{ .Name }}</strong>
-                      {{ else }}
-                        {{ .Name }}
-                      {{ end }}</a
-                    >
-                  </td>
-                  {{ if not .IsDirectory }}
-                    <td title="{{ .Size }} bytes">
-                      {{ .Size | humanizeBytes }}
-                    </td>
-                  {{ end }}
-                  <td>
-                    <time datetime="{{ .LastModified }}"
-                      >{{ .LastModified | ago }} ago</time
-                    >
-                  </td>
-                </tr>
-              {{ end }}
-            {{ else }}
-              <tr>
-                <td colspan="3">there is nothing here</td>
-              </tr>
-            {{ end }}
-          </tbody>
-        </table>
+        {{ template "components/storage-file-table.html" . }}
       </div>
-      <div id="upload-drop-zone" class="drop-zone">
+      <div id="upload-drop-zone" class="drop-zone fullscreen">
         <div class="content">
           <h3>Drag and drop files here to upload</h3>
+        </div>
+      </div>
+      <div id="trash-drop-zone" class="drop-zone">
+        <div class="content">
+          <h3>Drop here to delete</h3>
         </div>
       </div>
     {{ else }}

@@ -119,9 +119,9 @@ func GetPathBreadcrumbs(path string) []PathBreadcrumb {
 
 	breadcrumbs := make([]PathBreadcrumb, len(components))
 	for i, component := range components {
-		// Build path progressively: /foo, /foo/bar, /foo/bar/baz
+		// Build path progressively: foo, foo/bar, foo/bar/baz
 		pathComponents := components[:i+1]
-		breadcrumbPath := "/" + strings.Join(pathComponents, "/")
+		breadcrumbPath := strings.Join(pathComponents, "/")
 
 		breadcrumbs[i] = PathBreadcrumb{
 			Path:      breadcrumbPath,

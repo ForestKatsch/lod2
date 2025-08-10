@@ -1,0 +1,51 @@
+<table id="file-table" class="data padding">
+  <thead>
+    <tr>
+      <th class="file-name">Name</th>
+      <th class="file-size">Size</th>
+      <th class="file-last-modified">Last modified</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ if not (eq .Path "/") }}
+      <tr>
+        <td colspan="3">
+          <a href="/files{{ .Path }}/.." class="link"><strong>..</strong></a>
+        </td>
+      </tr>
+    {{ end }}
+    {{ if .Entries }}
+      {{ range .Entries }}
+        <tr>
+          <td
+            {{ if .IsDirectory }}
+              colspan="2"
+            {{ end }}
+          >
+            <a href="/files{{ $.Path }}/{{ .Name }}" class="link file-link"
+              >{{ if .IsDirectory }}
+                <strong>{{ .Name }}</strong>
+              {{ else }}
+                {{ .Name }}
+              {{ end }}</a
+            >
+          </td>
+          {{ if not .IsDirectory }}
+            <td title="{{ .Size }} bytes">
+              {{ .Size | humanizeBytes }}
+            </td>
+          {{ end }}
+          <td>
+            <time datetime="{{ .LastModified }}"
+              >{{ .LastModified | ago }} ago</time
+            >
+          </td>
+        </tr>
+      {{ end }}
+    {{ else }}
+      <tr>
+        <td colspan="3">there is nothing here</td>
+      </tr>
+    {{ end }}
+  </tbody>
+</table>

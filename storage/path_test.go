@@ -429,3 +429,154 @@ func BenchmarkVerifyPathMalicious(b *testing.B) {
 		_, _ = VerifyPath(testPath)
 	}
 }
+
+func TestGetPathBreadcrumbs(t *testing.T) {
+	tests := []struct {
+		name     string
+		path     string
+		expected []PathBreadcrumb
+	}{
+		{
+			name:     "empty path",
+			path:     "",
+			expected: []PathBreadcrumb{},
+		},
+		{
+			name:     "root path",
+			path:     "/",
+			expected: []PathBreadcrumb{},
+		},
+		{
+			name: "single component",
+			path: "/foo",
+			expected: []PathBreadcrumb{
+				{Path: "foo", Component: "foo", Final: true},
+			},
+		},
+		{
+			name: "single component without leading slash",
+			path: "foo",
+			expected: []PathBreadcrumb{
+				{Path: "foo", Component: "foo", Final: true},
+			},
+		},
+		{
+			name: "two components",
+			path: "/foo/bar",
+			expected: []PathBreadcrumb{
+				{Path: "foo", Component: "foo", Final: false},
+				{Path: "foo/bar", Component: "bar", Final: true},
+			},
+		},
+		{
+			name: "three components",
+			path: "/foo/bar/baz",
+			expected: []PathBreadcrumb{
+				{Path: "foo", Component: "foo", Final: false},
+				{Path: "foo/bar", Component: "bar", Final: false},
+				{Path: "foo/bar/baz", Component: "baz", Final: true},
+			},
+		},
+		{
+			name: "three components without leading slash",
+			path: "foo/bar/baz",
+			expected: []PathBreadcrumb{
+				{Path: "foo", Component: "foo", Final: false},
+				{Path: "foo/bar", Component: "bar", Final: false},
+				{Path: "foo/bar/baz", Component: "baz", Final: true},
+			},
+		},
+		{
+			name: "path with trailing slash",
+			path: "/foo/bar/",
+			expected: []PathBreadcrumb{
+				{Path: "foo", Component: "foo", Final: false},
+				{Path: "foo/bar", Component: "bar", Final: true},
+			},
+		},
+		{
+			name: "path with multiple slashes",
+			path: "/foo//bar///baz/",
+			expected: []PathBreadcrumb{
+				{Path: "foo", Component: "foo", Final: false},
+				{Path: "foo/bar", Component: "bar", Final: false},
+				{Path: "foo/bar/baz", Component: "baz", Final: true},
+			},
+		},
+		{
+			name: "path with spaces",
+			path: "/hello world/test folder",
+			expected: []PathBreadcrumb{
+				{Path: "hello world", Component: "hello world", Final: false},
+				{Path: "hello world/test folder", Component: "test folder", Final: true},
+			},
+		},
+		{
+			name: "path with special characters",
+			path: "/foo-bar/baz_qux/file.txt",
+			expected: []PathBreadcrumb{
+				{Path: "foo-bar", Component: "foo-bar", Final: false},
+				{Path: "foo-bar/baz_qux", Component: "baz_qux", Final: false},
+				{Path: "foo-bar/baz_qux/file.txt", Component: "file.txt", Final: true},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := GetPathBreadcrumbs(tt.path)
+			if len(result) != len(tt.expected) {
+				t.Errorf("GetPathBreadcrumbs(%q) returned %d breadcrumbs, expected %d", tt.path, len(result), len(tt.expected))
+				return
+			}
+			
+			for i, breadcrumb := range result {
+				expected := tt.expected[i]
+				if breadcrumb.Path != expected.Path {
+					t.Errorf("GetPathBreadcrumbs(%q)[%d].Path = %q, expected %q", tt.path, i, breadcrumb.Path, expected.Path)
+				}
+				if breadcrumb.Component != expected.Component {
+					t.Errorf("GetPathBreadcrumbs(%q)[%d].Component = %q, expected %q", tt.path, i, breadcrumb.Component, expected.Component)
+				}
+				if breadcrumb.Final != expected.Final {
+					t.Errorf("GetPathBreadcrumbs(%q)[%d].Final = %v, expected %v", tt.path, i, breadcrumb.Final, expected.Final)
+				}
+			}
+		})
+	}
+}
+
+func TestGetPathBreadcrumbsInvalidPaths(t *testing.T) {
+	invalidPaths := []string{
+		"../test",
+		"/foo/../bar",
+		"foo/../bar",
+		"/test/../../etc",
+		"../",
+		"/..",
+	}
+
+	for _, path := range invalidPaths {
+		t.Run("invalid_path_"+path, func(t *testing.T) {
+			result := GetPathBreadcrumbs(path)
+			if len(result) != 0 {
+				t.Errorf("GetPathBreadcrumbs(%q) should return empty slice for invalid path, got %+v", path, result)
+			}
+		})
+	}
+}
+
+func TestGetPathBreadcrumbsFinalFlag(t *testing.T) {
+	result := GetPathBreadcrumbs("/a/b/c/d")
+	
+	if len(result) != 4 {
+		t.Fatalf("Expected 4 breadcrumbs, got %d", len(result))
+	}
+
+	for i, breadcrumb := range result {
+		expectedFinal := i == len(result)-1
+		if breadcrumb.Final != expectedFinal {
+			t.Errorf("Breadcrumb %d: Final = %v, expected %v", i, breadcrumb.Final, expectedFinal)
+		}
+	}
+}
