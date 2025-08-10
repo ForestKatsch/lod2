@@ -141,6 +141,7 @@ body {
   flex-direction: row;
   align-items: center;
   row-gap: 0.5rem;
+  min-height: 3rem;
 }
 
 .gap-01 {
