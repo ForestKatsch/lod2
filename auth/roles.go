@@ -38,26 +38,26 @@ type AccessScope int
 const (
 	UserManagement AccessScope = iota
 	DangerousSql
-	Files
+	Storage
 )
 
 // This also defines the order of the scopes in the UI.
 var AllAccessScopes = []AccessScope{
 	DangerousSql,
 	UserManagement,
-	Files,
+	Storage,
 }
 
 var NameToAccessScope = map[string]AccessScope{
 	"UserManagement": UserManagement,
 	"DangerousSql":   DangerousSql,
-	"Files":          Files,
+	"Storage":        Storage,
 }
 
 var AccessScopeToDisplayName = map[AccessScope]string{
 	UserManagement: "User management",
 	DangerousSql:   "Database access",
-	Files:          "Files",
+	Storage:        "Files",
 }
 
 var AccessScopeToName = make(map[AccessScope]string)
@@ -99,7 +99,7 @@ type RoleString struct {
 var AllRoles = []Role{
 	{Level: Edit, Scope: UserManagement},
 	{Level: Edit, Scope: DangerousSql},
-	{Level: Edit, Scope: Files},
+	{Level: Edit, Scope: Storage},
 }
 
 func GetScopeName(scope AccessScope) string {

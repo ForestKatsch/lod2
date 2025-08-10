@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"lod2/auth"
+	"lod2/middleware"
 	"lod2/page"
 	"lod2/storage"
 	"net/http"
@@ -10,6 +12,7 @@ import (
 
 func Router() chi.Router {
 	r := chi.NewRouter()
+	r.Use(middleware.AuthRoleRequiredMiddleware(auth.Storage))
 
 	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		path := chi.URLParam(r, "*")
