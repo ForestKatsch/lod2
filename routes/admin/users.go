@@ -34,9 +34,15 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	currentUser := auth.GetCurrentUserInfo(r.Context())
 	var canCreateUsers bool
 	if currentUser != nil {
-		remaining, err := auth.AdminInvitesRemaining(currentUser.UserId)
-		if err == nil {
-			canCreateUsers = remaining > 0 || remaining == -1 // -1 means unlimited
+		// Check if user has UserManagement Edit permission (can always create users)
+		if auth.UserHasRole(currentUser.Roles, auth.UserManagement, auth.Edit) {
+			canCreateUsers = true
+		} else {
+			// Regular user needs remaining invites
+			remaining, err := auth.AdminInvitesRemaining(currentUser.UserId)
+			if err == nil {
+				canCreateUsers = remaining > 0
+			}
 		}
 	}
 

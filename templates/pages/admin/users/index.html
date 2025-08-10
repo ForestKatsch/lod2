@@ -15,14 +15,23 @@
 {{ end }}
 
 {{ define "content" }}
-  <header class="h">
+  <header class="h justify-between">
     <nav class="breadcrumbs">
       <a href="/admin">Admin</a>
       <a href="/admin/users">User management</a>
     </nav>
+    <a
+      class="button contrast-medium"
+      {{ if .CanCreateUsers }}
+        href="/admin/users/create"
+      {{ else }}
+        disabled title="No invites remaining"
+      {{ end }}
+      >Create user</a
+    >
   </header>
 
-  <section class="v gap-2">
+  <section class="v gap-01">
     <div class="v paper table-container">
       <table id="_user_table" class="data padding">
         <thead>
@@ -76,42 +85,27 @@
                 </button>
               </td>
               <td>
-                {{ if eq .InvitesRemaining -1 }}
-                  <span class="invites-remaining">∞</span>
-                {{ else }}
-                  <span class="invites-remaining">{{ .InvitesRemaining }}</span>
-                  <button
-                    class="link"
-                    hx-put="/admin/users/{{ .UserId }}/invites?to=5"
-                    hx-target="previous .invites-remaining"
-                  >
-                    Refill
-                  </button>
-                  /
-                  <button
-                    class="link"
-                    hx-put="/admin/users/{{ .UserId }}/invites"
-                    hx-target="previous .invites-remaining"
-                  >
-                    Clear
-                  </button>
-                {{ end }}
+                <span class="invites-remaining">{{ .InvitesRemaining }}</span>
+                <button
+                  class="link"
+                  hx-put="/admin/users/{{ .UserId }}/invites?to=5"
+                  hx-target="previous .invites-remaining"
+                >
+                  Refill
+                </button>
+                /
+                <button
+                  class="link"
+                  hx-put="/admin/users/{{ .UserId }}/invites"
+                  hx-target="previous .invites-remaining"
+                >
+                  Clear
+                </button>
               </td>
             </tr>
           {{ end }}
         </tbody>
       </table>
-    </div>
-    <div class="h justify-end gap-1">
-      <a
-        class="button contrast-medium"
-        {{ if .CanCreateUsers }}
-          href="/admin/users/create"
-        {{ else }}
-          disabled title="No invites remaining"
-        {{ end }}
-        >Create User</a
-      >
     </div>
   </section>
 {{ end }}

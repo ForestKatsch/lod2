@@ -326,28 +326,34 @@ func AdminGetUserById(userId string) (UserSessionInfo, error) {
 }
 
 func AdminInviteUser(asUserId string, newUsername string, newPassword string) (string, error) {
-	// Check if user has unlimited invites (admins) or has remaining invites
+	// Check if user has UserManagement Edit permission (can create users on-demand)
+	roles, err := GetUserRoles(asUserId)
+	if err == nil {
+		roleMap := GetRoleMap(roles)
+		if roleMap[UserManagement] >= Edit {
+			// Admin can create an invite on-demand
+			inviteId, err := AdminCreateInvite(asUserId)
+			if err != nil {
+				return "", err
+			}
+			return RegisterUserWithInvite(inviteId, newUsername, newPassword)
+		}
+	}
+
+	// Check if regular user has remaining invites
 	remaining, err := AdminInvitesRemaining(asUserId)
 	if err != nil {
 		return "", err
 	}
 
-	var inviteId string
-
-	if remaining == -1 {
-		// Admin with unlimited invites - create an invite to use
-		inviteId, err = AdminCreateInvite(asUserId)
-		if err != nil {
-			return "", err
-		}
-	} else if remaining <= 0 {
+	if remaining <= 0 {
 		return "", errors.New("no invites remaining")
-	} else {
-		// Regular user with remaining invites - get an unused invite
-		inviteId, err = GetUserInviteId(asUserId)
-		if err != nil {
-			return "", err
-		}
+	}
+
+	// Get an unused invite
+	inviteId, err := GetUserInviteId(asUserId)
+	if err != nil {
+		return "", err
 	}
 
 	// Use the existing registration function

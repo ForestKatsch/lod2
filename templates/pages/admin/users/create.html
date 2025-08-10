@@ -1,4 +1,4 @@
-{{ define "title" }}Create User{{ end }}
+{{ define "title" }}Create user{{ end }}
 
 {{ define "meta" }}
   <link rel="stylesheet" href="/static/styles/page/auth.css" />
@@ -14,7 +14,7 @@
   </header>
 
   <form method="POST" class="v auth-box gap-1">
-    <h1>Create User</h1>
+    <h1>Create user</h1>
 
     <table class="paper">
       <tbody>
@@ -72,6 +72,7 @@
     {{ if .Error }}
       <div class="error alert">{{ .Error }}</div>
     {{ end }}
+
 
     <div class="h gap-fill">
       <a href="/admin/users" class="link contrast-medium">Cancel</a>

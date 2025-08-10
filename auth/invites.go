@@ -117,18 +117,9 @@ func AdminConsumeInviteTx(tx *sql.Tx, inviteId string, consumedByUserId string) 
 }
 
 func AdminInvitesRemaining(userId string) (int, error) {
-	// Check if user has UserManagement Edit permission (unlimited invites)
-	roles, err := GetUserRoles(userId)
-	if err == nil {
-		roleMap := GetRoleMap(roles)
-		if roleMap[UserManagement] >= Edit {
-			return -1, nil // -1 indicates unlimited invites
-		}
-	}
-
-	// Count unused invites for regular users
+	// Count unused invites for all users
 	var invitesRemaining int
-	err = db.DB.QueryRow(`
+	err := db.DB.QueryRow(`
 		SELECT COUNT(*) 
 		FROM authInvites 
 		WHERE createdByUserId = ? AND consumedByUserId IS NULL`, userId).Scan(&invitesRemaining)
