@@ -16,8 +16,8 @@
       <tbody>
         {{ range $index, $row := .Rows }}
           <tr>
-            {{ range $value := $row }}
-              <td>{{ $value }}</td>
+            {{ range $column := $.Columns }}
+              <td>{{ index $row $column }}</td>
             {{ end }}
           </tr>
         {{ end }}

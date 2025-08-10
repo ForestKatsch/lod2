@@ -36,6 +36,10 @@ func dynamicFuncs() template.FuncMap {
 		return auth.GetScopeName(scope)
 	}
 
+	funcs["accessScopeToDisplayName"] = func(scope auth.AccessScope) string {
+		return auth.GetScopeDisplayName(scope)
+	}
+
 	funcs["hasRole"] = func(user *auth.UserInfo, scopeName string, levelName string) bool {
 		if user == nil {
 			return false

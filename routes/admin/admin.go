@@ -21,6 +21,14 @@ func Router() chi.Router {
 		page.Render(w, r, "admin/index.html", map[string]interface{}{})
 	})
 
+	r.Get("/sql", func(w http.ResponseWriter, r *http.Request) {
+		if !auth.VerifyRole(r.Context(), auth.DangerousSql, auth.Edit) {
+			page.Render401(w, r)
+			return
+		}
+		page.Render(w, r, "admin/sql.html", map[string]interface{}{})
+	})
+
 	r.Post("/db/execute", func(w http.ResponseWriter, r *http.Request) {
 		if !auth.VerifyRole(r.Context(), auth.DangerousSql, auth.Edit) {
 			page.Render401(w, r)

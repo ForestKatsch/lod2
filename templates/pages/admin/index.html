@@ -12,18 +12,10 @@
   </header>
   <section class="v gap-1">
     <a href="/admin/users" class="link">User management</a>
-    <hr />
-    <form class="v gap-01" hx-post="/admin/db/execute" hx-target="#results">
-      <textarea
-        name="query"
-        class="inset"
-        placeholder="SELECT * FROM table"
-      ></textarea>
-      <button class="button contrast-medium align-self-end">Execute</button>
-    </form>
-    <section id="results" class="v gap-01">
-      <div class="alert info">execute a query to view rows</div>
-    </section>
+    {{ if hasRole .Meta.User "DangerousSql" "Edit" }}
+      <hr />
+      <a href="/admin/sql" class="link">SQL Console</a>
+    {{ end }}
   </section>
 {{ end }}
 

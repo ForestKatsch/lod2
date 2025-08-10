@@ -1,0 +1,44 @@
+{{ define "title" }}SQL Console{{ end }}
+
+{{ define "content" }}
+  <header class="h">
+    <nav class="breadcrumbs">
+      <a href="/admin">Admin</a>
+      <a href="/admin/sql">SQL Console</a>
+    </nav>
+  </header>
+  <section class="v gap-1">
+    <div class="alert warning">
+      You have direct write access to the database. Use extreme caution.
+    </div>
+    <form class="v gap-01" hx-post="/admin/db/execute" hx-target="#results">
+      <textarea
+        id="query"
+        name="query"
+        class="inset"
+        placeholder="SELECT * FROM table"
+        rows="6"
+        autofocus
+      >
+SELECT * FROM authUsers;</textarea
+      >
+      <script>
+        const textarea = document.getElementById("query");
+        const form = textarea.closest("form");
+
+        textarea.addEventListener("keydown", function (e) {
+          if ((e.metaKey || e.ctrlKey) && e.which === 13) {
+            e.preventDefault();
+            form.dispatchEvent(new Event("submit"));
+          }
+        });
+      </script>
+      <button class="button contrast-medium align-self-end">Execute</button>
+    </form>
+    <section id="results" class="v gap-01">
+      <div class="alert info">execute a query to view rows</div>
+    </section>
+  </section>
+{{ end }}
+
+{{ template "layout/main.html" . }}

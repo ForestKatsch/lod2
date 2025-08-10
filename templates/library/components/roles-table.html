@@ -11,7 +11,7 @@
           {{ range .Roles }}
             {{ $role := . }}
             <tr>
-              <td>{{ accessScopeToString $role.Scope }}</td>
+              <td>{{ accessScopeToDisplayName $role.Scope }}</td>
               <td class="no-padding">
                 <select
                   name="{{ $role.Scope }}"

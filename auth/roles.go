@@ -54,6 +54,12 @@ var NameToAccessScope = map[string]AccessScope{
 	"Files":          Files,
 }
 
+var AccessScopeToDisplayName = map[AccessScope]string{
+	UserManagement: "User management",
+	DangerousSql:   "Database access",
+	Files:          "Files",
+}
+
 var AccessScopeToName = make(map[AccessScope]string)
 
 func init() {
@@ -61,9 +67,21 @@ func init() {
 		AccessScopeToName[scope] = name
 	}
 
+	if len(AccessScopeToName) != len(AllAccessScopes) {
+		panic("AccessScopeToName is not the same length as AllAccessScopes; make sure to add all scopes to NameToAccessScope")
+	}
+
+	if len(AccessScopeToDisplayName) != len(AllAccessScopes) {
+		panic("AccessScopeToDisplayName is not the same length as AllAccessScopes; make sure to add all scopes to AccessScopeToDisplayName")
+	}
+
 	// Populate the reverse map from the source NameToAccessLevel map.
 	for name, level := range NameToAccessLevel {
 		AccessLevelToName[level] = name
+	}
+
+	if len(AccessLevelToName) != len(AllAccessLevels) {
+		panic("AccessLevelToName is not the same length as AllAccessLevels; make sure to add all levels to NameToAccessLevel")
 	}
 }
 
@@ -85,13 +103,11 @@ var AllRoles = []Role{
 }
 
 func GetScopeName(scope AccessScope) string {
-	for name, s := range NameToAccessScope {
-		if s == scope {
-			return name
-		}
-	}
+	return AccessScopeToName[scope]
+}
 
-	return "(unknown scope)"
+func GetScopeDisplayName(scope AccessScope) string {
+	return AccessScopeToDisplayName[scope]
 }
 
 func GetLevelName(level AccessLevel) string {
