@@ -66,7 +66,12 @@ func postUploadPath(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("renaming %s to %s", tempFile.Name(), dangerousFilesystemPath)
-	os.Rename(tempFile.Name(), dangerousFilesystemPath)
+	err = os.Rename(tempFile.Name(), dangerousFilesystemPath)
+
+	if err != nil {
+		page.RenderError(w, r, err)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
