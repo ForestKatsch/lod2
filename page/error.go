@@ -11,6 +11,11 @@ func RenderError(w http.ResponseWriter, r *http.Request, err error) {
 	log.Print("TODO rendering error: ", err)
 }
 
+func RenderStatus(w http.ResponseWriter, r *http.Request, status int, message string) {
+	// TODO: use templating
+	http.Error(w, message, status)
+}
+
 func Render401(w http.ResponseWriter, r *http.Request) {
 	Render(w, r, "/_error/401.html", nil)
 }

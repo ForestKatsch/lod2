@@ -10,7 +10,7 @@ import (
 // All public functions operate on _unsafe paths_ provided by the user. All functions
 // here are expected to verify paths and return errors if appropriate.
 func Exists(path string) (bool, error) {
-	filesystemPath, err := filesystemPath(path)
+	filesystemPath, err := DangerousFilesystemPath(path)
 	if err != nil {
 		return false, err
 	}
@@ -24,7 +24,7 @@ func Exists(path string) (bool, error) {
 }
 
 func IsDirectory(path string) (bool, error) {
-	filesystemPath, err := filesystemPath(path)
+	filesystemPath, err := DangerousFilesystemPath(path)
 	if err != nil {
 		return false, err
 	}
@@ -67,7 +67,7 @@ type Entry struct {
 }
 
 func ListContents(path string) ([]Entry, error) {
-	filesystemPath, err := filesystemPath(path)
+	filesystemPath, err := DangerousFilesystemPath(path)
 
 	if err != nil {
 		return nil, err

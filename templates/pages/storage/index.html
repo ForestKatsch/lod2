@@ -19,6 +19,106 @@
       width: 25%;
     }
   </style>
+  <script>
+    function init() {
+      const dropZone = q("#upload-drop-zone");
+
+      function warnWhenLeaving() {
+        return "File upload will be cancelled.";
+      }
+
+      function lmaoXhrInTheYearOfOurLord2025(file, progressCallback) {
+        return new Promise((resolve, reject) => {
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", `/files{{ .Path }}`, true);
+
+          xhr.addEventListener("progress", (e) => {
+            progressCallback(e);
+          });
+
+          xhr.addEventListener("load", (e) => {
+            console.log("load", e);
+            resolve();
+          });
+
+          xhr.addEventListener("readystatechange", (e) => {
+            if (xhr.readyState !== XMLHttpRequest.DONE) {
+              return;
+            }
+
+            if (e.target.status >= 200 && e.target.status < 300) {
+              resolve();
+            } else {
+              reject(new Error(e.target.statusText));
+            }
+          });
+
+          xhr.send(formData);
+        });
+      }
+
+      function uploadFile(file) {
+        const eRow = e(q("#file-table > tbody"), "tr", "upload-file");
+        const eName = e(eRow, "td", "file-name");
+        const eSize = e(eRow, "td", "file-size");
+        const eLastModified = e(eRow, "td", "file-last-modified");
+
+        eName.textContent = file.name;
+        eSize.textContent = `starting...`;
+        eLastModified.textContent = "uploading...";
+
+        const response = lmaoXhrInTheYearOfOurLord2025(file, (e) => {
+            const progress = e.loaded / e.total;
+            const bytes = e.loaded;
+            const total = e.total;
+            const percentage = Math.round(progress * 100);
+
+            eSize.textContent = `${humanizeBytes(bytes)} / ${humanizeBytes(total)} (${percentage}%)`;
+      });
+
+        window.addEventListener("beforeunload", warnWhenLeaving);
+
+        response.then(() => {
+          eSize.textContent = humanizeBytes(file.size);
+          eLastModified.textContent = "just now";
+
+          window.removeEventListener("beforeunload", warnWhenLeaving);
+        }).catch((e) => {
+          sendToast(`failed to upload file: ${e.message}`);
+          eSize.textContent = "failed";
+          eLastModified.textContent = "just now";
+        });
+      }
+
+      function handleStartDrag(e) {
+        dropZone.classList.add("visible");
+        e.preventDefault();
+      }
+
+      function cancelDrop(e) {
+        dropZone.classList.remove("visible");
+        e.preventDefault();
+      }
+
+      function handleDrop(e) {
+        dropZone.classList.remove("visible");
+        console.log(e.dataTransfer.files[0]);
+        uploadFile(e.dataTransfer.files[0]);
+        e.preventDefault();
+      }
+
+      dropZone.addEventListener("drop", handleDrop);
+
+      document.addEventListener("dragover", handleStartDrag);
+
+      document.addEventListener("dragend", cancelDrop);
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
 {{ end }}
 
 {{ define "content" }}
@@ -41,7 +141,7 @@
 
     {{ if .IsDirectory }}
       <div class="table-container paper">
-        <table class="data padding">
+        <table id="file-table" class="data padding">
           <thead>
             <tr>
               <th class="file-name">Name</th>
@@ -94,6 +194,11 @@
             {{ end }}
           </tbody>
         </table>
+      </div>
+      <div id="upload-drop-zone" class="drop-zone">
+        <div class="content">
+          <h3>Drag and drop files here to upload</h3>
+        </div>
       </div>
     {{ else }}
       <div class="alert info align-self-center">haha im a file! :D</div>

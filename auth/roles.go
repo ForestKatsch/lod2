@@ -39,6 +39,7 @@ const (
 	UserManagement AccessScope = iota
 	DangerousSql
 	Storage
+	Media
 )
 
 // This also defines the order of the scopes in the UI.
@@ -46,18 +47,22 @@ var AllAccessScopes = []AccessScope{
 	DangerousSql,
 	UserManagement,
 	Storage,
+	Media,
 }
 
+// These are the raw names that need to match enum names. Templates will need to be updated if these are changed.
 var NameToAccessScope = map[string]AccessScope{
 	"UserManagement": UserManagement,
 	"DangerousSql":   DangerousSql,
 	"Storage":        Storage,
+	"Media":          Media,
 }
 
 var AccessScopeToDisplayName = map[AccessScope]string{
 	UserManagement: "User management",
 	DangerousSql:   "Database access",
 	Storage:        "Files",
+	Media:          "Media",
 }
 
 var AccessScopeToName = make(map[AccessScope]string)
@@ -100,6 +105,7 @@ var AllRoles = []Role{
 	{Level: Edit, Scope: UserManagement},
 	{Level: Edit, Scope: DangerousSql},
 	{Level: Edit, Scope: Storage},
+	{Level: Edit, Scope: Media},
 }
 
 func GetScopeName(scope AccessScope) string {

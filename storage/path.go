@@ -65,19 +65,7 @@ func VerifyPath(untrustedPath string) (string, error) {
 	return cleanPath, nil
 }
 
-// FilesystemPath converts a verified clean path to the actual filesystem path.
-// This function accepts a verified clean path (from VerifyPath) or any safe path
-// and returns the full filesystem path by joining it with the storage root.
-//
-// Usage:
-//
-//	verifiedPath, err := storage.VerifyPath("/foo/bar")
-//	if err != nil {
-//	    // Handle error
-//	}
-//	filesystemPath := storage.FilesystemPath(verifiedPath)
-//	// filesystemPath is now the full path on the filesystem
-func filesystemPath(path string) (string, error) {
+func DangerousFilesystemPath(path string) (string, error) {
 	verifiedPath, err := VerifyPath(path)
 	if err != nil {
 		return "", err

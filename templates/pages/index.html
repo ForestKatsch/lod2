@@ -12,6 +12,12 @@
             <h6>View and manage files</h6>
           </a>
         {{ end }}
+        {{ if hasRole .Meta.User "Media" "View" }}
+          <a class="button contrast-medium" href="/media">
+            <h3>Media</h3>
+            <h6>consoom</h6>
+          </a>
+        {{ end }}
         <a class="button contrast-medium" href="/account">
           <h3>My account</h3>
           <h6>just use the button up there lmao</h6>

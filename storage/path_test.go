@@ -17,7 +17,7 @@ func setupTestStorageRoot(t *testing.T) (string, func()) {
 
 	// Store original config
 	originalStoragePath := config.Config.StoragePath
-	
+
 	// Set config to use temp directory
 	config.Config.StoragePath = tempDir
 
@@ -35,9 +35,9 @@ func TestVerifyPath_ValidPaths(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name        string
-		inputPath   string
-		expected string // What the clean path should be
+		name      string
+		inputPath string
+		expected  string // What the clean path should be
 	}{
 		{
 			name:      "root path",
@@ -114,7 +114,7 @@ func TestVerifyPath_ValidPaths(t *testing.T) {
 			}
 
 			// Verify filesystemPath result is within storage root
-			fsPath, err := filesystemPath(result)
+			fsPath, err := DangerousFilesystemPath(result)
 			if err != nil {
 				t.Errorf("filesystemPath(%q) failed: %v", result, err)
 				return
@@ -130,7 +130,7 @@ func TestVerifyPath_RelativePathsEquivalent(t *testing.T) {
 	storageRoot, cleanup := setupTestStorageRoot(t)
 	defer cleanup()
 
-	// Test that relative and absolute paths behave identically  
+	// Test that relative and absolute paths behave identically
 	testCases := []struct {
 		absolute string
 		relative string
@@ -154,9 +154,9 @@ func TestVerifyPath_RelativePathsEquivalent(t *testing.T) {
 			}
 
 			// filesystemPath should produce identical results
-			absFS, absFSErr := filesystemPath(absResult)
-			relFS, relFSErr := filesystemPath(relResult)
-			
+			absFS, absFSErr := DangerousFilesystemPath(absResult)
+			relFS, relFSErr := DangerousFilesystemPath(relResult)
+
 			if absFSErr != nil {
 				t.Errorf("filesystemPath(%q) failed: %v", absResult, absFSErr)
 				return
@@ -191,7 +191,7 @@ func TestVerifyPath_MaliciousPaths(t *testing.T) {
 		path string
 	}{
 		{
-			name: "relative parent path with traversal", 
+			name: "relative parent path with traversal",
 			path: "../relative",
 		},
 		{
@@ -328,7 +328,7 @@ func TestVerifyPath_EdgeCases(t *testing.T) {
 	for _, tt := range edgeCases {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := VerifyPath(tt.path)
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Errorf("VerifyPath(%q) expected error but got result: %q", tt.path, result)
@@ -372,7 +372,7 @@ func TestVerifyPath_SecurityInvariant(t *testing.T) {
 	for i, maliciousInput := range maliciousInputs {
 		t.Run(filepath.Base(maliciousInput)+string(rune(i)), func(t *testing.T) {
 			result, err := VerifyPath(maliciousInput)
-			
+
 			if err == nil {
 				// If no error, verify the result is still safe
 				absResult, absErr := filepath.Abs(result)
@@ -380,17 +380,17 @@ func TestVerifyPath_SecurityInvariant(t *testing.T) {
 					t.Errorf("Could not get absolute path of result %q: %v", result, absErr)
 					return
 				}
-				
+
 				absRoot, absErr := filepath.Abs(storageRoot)
 				if absErr != nil {
 					t.Errorf("Could not get absolute path of storage root %q: %v", storageRoot, absErr)
 					return
 				}
-				
+
 				if !strings.HasPrefix(absResult, absRoot) {
 					t.Errorf("SECURITY VIOLATION: VerifyPath(%q) returned %q which escapes storage root %q", maliciousInput, result, storageRoot)
 				}
-				
+
 				// Allow exact root match since "/" should map to storage root
 				if absResult != absRoot && !strings.HasPrefix(absResult, absRoot+string(filepath.Separator)) {
 					t.Errorf("SECURITY VIOLATION: VerifyPath(%q) returned %q which escapes storage root %q", maliciousInput, result, storageRoot)
@@ -404,12 +404,12 @@ func TestVerifyPath_SecurityInvariant(t *testing.T) {
 func BenchmarkVerifyPath(b *testing.B) {
 	storageRoot, cleanup := setupTestStorageRoot(nil)
 	defer cleanup()
-	
+
 	// Set a dummy config for benchmarking
 	config.Config.StoragePath = storageRoot
-	
+
 	testPath := "/folder/subfolder/file.txt"
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = VerifyPath(testPath)
@@ -419,11 +419,11 @@ func BenchmarkVerifyPath(b *testing.B) {
 func BenchmarkVerifyPathMalicious(b *testing.B) {
 	storageRoot, cleanup := setupTestStorageRoot(nil)
 	defer cleanup()
-	
+
 	config.Config.StoragePath = storageRoot
-	
+
 	testPath := "/../../../../../../../../etc/passwd"
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = VerifyPath(testPath)
