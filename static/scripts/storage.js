@@ -1,4 +1,4 @@
-function initDragAndDrop() {
+function initDragAndDrop(path) {
   const uploadZone = q("#upload-drop-zone");
   const trashZone = q("#trash-drop-zone");
   let draggingInternalFile = null; // File from within the current directory
@@ -15,7 +15,7 @@ function initDragAndDrop() {
     htmx.swap("#file-table", html, { swapStyle: "outerHTML" });
   }
 
-  function uploadFile(file, targetPath = "{{ .Path }}") {
+  function uploadFile(file, targetPath = path) {
     q(".empty-directory").remove();
 
     const eRow = e(q("#file-table > tbody"), "tr", "upload-file");
@@ -48,7 +48,7 @@ function initDragAndDrop() {
         eName.innerHTML = "";
         const eLink = e(eName, "a", "link file-link");
         // Properly encode the URL path
-        const encodedPath = "{{ $.Path }}"
+        const encodedPath = path
           .split("/")
           .map((p) => (p ? encodeURIComponent(p) : ""))
           .join("/");
@@ -328,7 +328,7 @@ function initDragAndDrop() {
     const formData = new FormData(e.target);
     const directoryName = formData.get("directoryName");
     try {
-      const response = await fetch(`/files{{ .Path }}/${directoryName}`, {
+      const response = await fetch(`/files${path}/${directoryName}`, {
         method: "PUT",
       });
 
@@ -339,5 +339,3 @@ function initDragAndDrop() {
     }
   });
 }
-
-document.addEventListener("DOMContentLoaded", initDragAndDrop);

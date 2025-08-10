@@ -72,6 +72,11 @@
   </style>
   {{ if .IsDirectory }}
     <script defer src="/static/scripts/storage.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        initDragAndDrop("{{ .Path }}");
+      });
+    </script>
   {{ end }}
 {{ end }}
 
