@@ -333,7 +333,7 @@ input[type="text"],
 input[type="password"],
 textarea {
   min-width: 0;
-  padding: 0.5rem;
+  padding: 0.3rem 0.5rem;
 
   &:focus {
     background-color: var(--focus);
