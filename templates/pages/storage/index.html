@@ -53,7 +53,9 @@
             {{ if not (eq .Path "/") }}
               <tr>
                 <td colspan="3">
-                  <a href="/files{{ .Path }}/.." class="link">..</a>
+                  <a href="/files{{ .Path }}/.." class="link"
+                    ><strong>..</strong></a
+                  >
                 </td>
               </tr>
             {{ end }}
@@ -66,7 +68,11 @@
                     {{ end }}
                   >
                     <a href="/files{{ $.Path }}{{ .Name }}" class="link"
-                      >{{ .Name }}</a
+                      >{{ if .IsDirectory }}
+                        <strong>{{ .Name }}</strong>
+                      {{ else }}
+                        {{ .Name }}
+                      {{ end }}</a
                     >
                   </td>
                   {{ if not .IsDirectory }}
