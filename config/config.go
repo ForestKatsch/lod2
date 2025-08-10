@@ -26,6 +26,8 @@ var Config struct {
 
 	// dynamic data directory for things such as DBs and files. read-write.
 	DataPath string
+
+	StoragePath string
 }
 
 func Init(autocreate bool) {
@@ -34,22 +36,20 @@ func Init(autocreate bool) {
 
 	flag.StringVar(&Config.ConfigPath, "config", "~/.config/lod2/", "path to configuration directory")
 	flag.StringVar(&Config.DataPath, "data", "~/.local/share/lod2/", "path to data directory")
+	flag.StringVar(&Config.StoragePath, "storage", "~/storage/", "path to huge storage directory")
 
 	Config.ConfigPath = utils.ExpandHomePath(Config.ConfigPath)
 	Config.DataPath = utils.ExpandHomePath(Config.DataPath)
+	Config.StoragePath = utils.ExpandHomePath(Config.StoragePath)
 
 	flag.Parse()
 
 	if autocreate {
-		if _, err := os.Stat(Config.ConfigPath); os.IsNotExist(err) {
-			log.Printf("config directory missing at %s; creating necessary files", Config.ConfigPath)
-			if err := ensureBaseDirs(); err != nil {
-				log.Fatalf("failed to create base dirs: %v", err)
-			}
-			if err := createAuthPrivateKeyIfNotExists(); err != nil {
-				log.Fatalf("failed to create auth key: %v", err)
-			}
-			log.Printf("autocreate completed; created base directories and auth key at %s", Config.ConfigPath)
+		if err := ensureBaseDirs(); err != nil {
+			log.Fatalf("failed to create base dirs: %v", err)
+		}
+		if err := createAuthPrivateKeyIfNotExists(); err != nil {
+			log.Fatalf("failed to create auth key: %v", err)
 		}
 	}
 }
@@ -65,6 +65,9 @@ func ensureBaseDirs() error {
 	}
 	if err := os.MkdirAll(Config.DataPath, 0o755); err != nil {
 		return err
+	}
+	if _, err := os.Stat(Config.StoragePath); os.IsNotExist(err) {
+		log.Printf("warning: storage directory missing at %s. create this directory to enable file management.", Config.StoragePath)
 	}
 	return nil
 }
