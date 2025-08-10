@@ -92,8 +92,8 @@
 
           window.removeEventListener("beforeunload", warnWhenLeaving);
         }).catch((e) => {
-          sendToast(`failed to upload file: ${e.message}`);
-          eSize.textContent = "failed";
+          sendToast(`Upload failed: ${e.message}`);
+          eSize.textContent = `failed (${e.message})`;
           eLastModified.textContent = "just now";
         });
       }
