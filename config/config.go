@@ -66,9 +66,6 @@ func ensureBaseDirs() error {
 	if err := os.MkdirAll(Config.DataPath, 0o755); err != nil {
 		return err
 	}
-	if _, err := os.Stat(Config.StoragePath); os.IsNotExist(err) {
-		log.Printf("warning: storage directory missing at %s. create this directory to enable file management.", Config.StoragePath)
-	}
 	return nil
 }
 

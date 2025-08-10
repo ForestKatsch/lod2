@@ -16,6 +16,7 @@ import (
 	"lod2/middleware"
 	"lod2/page"
 	"lod2/routes"
+	"lod2/storage"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 
@@ -25,11 +26,12 @@ import (
 func main() {
 	config.Init(true)
 	db.Init()
-	
+
 	// Run global migrations before initializing other packages
 	db.RunMigrations()
-	
+
 	auth.Init()
+	storage.Init()
 
 	// The primary router.
 	r := chi.NewRouter()

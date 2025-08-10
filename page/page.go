@@ -3,6 +3,7 @@ package page
 import (
 	"html/template"
 	"lod2/auth"
+	"lod2/utils"
 	"log"
 	"net/http"
 	"os"
@@ -38,6 +39,10 @@ func dynamicFuncs() template.FuncMap {
 
 	funcs["accessScopeToDisplayName"] = func(scope auth.AccessScope) string {
 		return auth.GetScopeDisplayName(scope)
+	}
+
+	funcs["humanizeBytes"] = func(bytes int64) string {
+		return utils.HumanizeBytes(bytes)
 	}
 
 	funcs["hasRole"] = func(user *auth.UserInfo, scopeName string, levelName string) bool {
