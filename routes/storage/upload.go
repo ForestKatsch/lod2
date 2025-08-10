@@ -5,7 +5,6 @@ import (
 	"io"
 	"lod2/page"
 	"lod2/storage"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -34,13 +33,6 @@ func postUploadPath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dangerousFilesystemPath, err := storage.DangerousFilesystemPath(uploadPath)
-
-	if err != nil {
-		page.RenderError(w, r, err)
-		return
-	}
-
 	// copy to temp file
 	tempFile, err := os.CreateTemp("", "upload-*.part")
 	if err != nil {
@@ -65,8 +57,7 @@ func postUploadPath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("renaming %s to %s", tempFile.Name(), dangerousFilesystemPath)
-	err = os.Rename(tempFile.Name(), dangerousFilesystemPath)
+	err = storage.ImportFile(tempFile.Name(), uploadPath)
 
 	if err != nil {
 		page.RenderError(w, r, err)

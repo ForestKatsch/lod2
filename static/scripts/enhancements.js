@@ -65,8 +65,6 @@ function c(classes) {
 function e() {
   let parent = null;
   let element = "div";
-  let id = null;
-  let classes = null;
 
   arguments = [...arguments];
 
@@ -79,19 +77,13 @@ function e() {
     arguments = arguments.slice(1);
   }
 
-  if (arguments[1] != null) {
-    id = arguments[0];
-    classes = arguments[1];
-  } else {
-    classes = arguments[0];
-  }
-
   const e = document.createElement(element);
-  if (id != null) {
-    e.id = id;
-  }
-  if (classes != null) {
-    e.classes = c(classes);
+
+  if (arguments[1] != null) {
+    e.id = arguments[0];
+    e.className = arguments[1];
+  } else {
+    e.className = arguments[0];
   }
 
   if (parent != null) {

@@ -77,11 +77,16 @@
             const percentage = Math.round(progress * 100);
 
             eSize.textContent = `${humanizeBytes(bytes)} / ${humanizeBytes(total)} (${percentage}%)`;
-      });
+        });
 
         window.addEventListener("beforeunload", warnWhenLeaving);
 
         response.then(() => {
+          eName.innerHTML = "";
+          const eLink = e(eName, "a", "link");
+          eLink.href = `/files{{ $.Path }}${file.name}`;
+          eLink.textContent = file.name;
+
           eSize.textContent = humanizeBytes(file.size);
           eLastModified.textContent = "just now";
 
