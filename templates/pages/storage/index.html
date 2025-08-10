@@ -52,7 +52,7 @@
             if (e.target.status >= 200 && e.target.status < 300) {
               resolve();
             } else {
-              reject(new Error(e.target.statusText));
+              reject(new Error(e.target.status));
             }
           });
 
@@ -110,15 +110,23 @@
 
       function handleDrop(e) {
         dropZone.classList.remove("visible");
-        console.log(e.dataTransfer.files[0]);
-        uploadFile(e.dataTransfer.files[0]);
+        if (e.dataTransfer.files.length > 0) {
+          uploadFile(e.dataTransfer.files[0]);
+        }
         e.preventDefault();
+      }
+
+      function handleLeaveOrEnd(e) {
+        if (e.target.classList.contains("drop-zone")) {
+          e.target.classList.remove("visible");
+        }
       }
 
       dropZone.addEventListener("drop", handleDrop);
 
       document.addEventListener("dragover", handleStartDrag);
-
+      dropZone.addEventListener("dragleave", cancelDrop);
+      dropZone.addEventListener("dragend", cancelDrop);
       document.addEventListener("dragend", cancelDrop);
     }
 
