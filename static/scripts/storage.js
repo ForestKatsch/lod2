@@ -16,16 +16,23 @@ function initDragAndDrop(path) {
   }
 
   function uploadFile(file, targetPath = path) {
-    q(".empty-directory").remove();
+    // Only show upload progress in the current directory
+    let eRow, eName, eSize, eLastModified;
+    if (targetPath === path) {
+      const emptyDir = q(".empty-directory");
+      if (emptyDir) {
+        emptyDir.remove();
+      }
 
-    const eRow = e(q("#file-table > tbody"), "tr", "upload-file");
-    const eName = e(eRow, "td", "file-name");
-    const eSize = e(eRow, "td", "file-size");
-    const eLastModified = e(eRow, "td", "file-last-modified");
+      eRow = e(q("#file-table > tbody"), "tr", "upload-file");
+      eName = e(eRow, "td", "file-name");
+      eSize = e(eRow, "td", "file-size");
+      eLastModified = e(eRow, "td", "file-last-modified");
 
-    eName.textContent = file.name;
-    eSize.textContent = `starting...`;
-    eLastModified.textContent = "uploading...";
+      eName.textContent = file.name;
+      eSize.textContent = `starting...`;
+      eLastModified.textContent = "uploading...";
+    }
 
     const formData = new FormData();
     formData.append("file", file);
@@ -34,7 +41,7 @@ function initDragAndDrop(path) {
     xhr.open("POST", `/files${targetPath}`, true);
 
     xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) {
+      if (e.lengthComputable && eSize) {
         const progress = e.loaded / e.total;
         const bytes = e.loaded;
         const total = e.total;
@@ -45,30 +52,36 @@ function initDragAndDrop(path) {
 
     xhr.addEventListener("load", () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        eName.innerHTML = "";
-        const eLink = e(eName, "a", "link file-link");
-        // Properly encode the URL path
-        const encodedPath = path
-          .split("/")
-          .map((p) => (p ? encodeURIComponent(p) : ""))
-          .join("/");
-        eLink.href = `/files${encodedPath}/${encodeURIComponent(file.name)}`;
-        eLink.textContent = file.name;
+        if (eName && eSize && eLastModified) {
+          eName.innerHTML = "";
+          const eLink = e(eName, "a", "link file-link");
+          // Properly encode the URL path
+          const encodedPath = path
+            .split("/")
+            .map((p) => (p ? encodeURIComponent(p) : ""))
+            .join("/");
+          eLink.href = `/files${encodedPath}/${encodeURIComponent(file.name)}`;
+          eLink.textContent = file.name;
 
-        eSize.textContent = humanizeBytes(file.size);
-        eLastModified.textContent = "just now";
+          eSize.textContent = humanizeBytes(file.size);
+          eLastModified.textContent = "just now";
+        }
       } else {
         sendToast(`Upload failed: ${xhr.statusText}`);
-        eSize.textContent = `failed (${xhr.statusText})`;
-        eLastModified.textContent = "just now";
+        if (eSize && eLastModified) {
+          eSize.textContent = `failed (${xhr.statusText})`;
+          eLastModified.textContent = "just now";
+        }
       }
       window.removeEventListener("beforeunload", warnWhenLeaving);
     });
 
     xhr.addEventListener("error", () => {
       sendToast(`Upload failed: Network error`);
-      eSize.textContent = `failed (network error)`;
-      eLastModified.textContent = "just now";
+      if (eSize && eLastModified) {
+        eSize.textContent = `failed (network error)`;
+        eLastModified.textContent = "just now";
+      }
       window.removeEventListener("beforeunload", warnWhenLeaving);
     });
 
@@ -158,13 +171,15 @@ function initDragAndDrop(path) {
 
       // Check if we're entering a directory drop target for external files
       const dropTarget = e.target.closest(".directory-drop-target");
-      if (dropTarget && dropTarget !== currentDropTarget) {
+      if (dropTarget !== currentDropTarget) {
         // Remove highlight from previous target
         if (currentDropTarget) {
           currentDropTarget.classList.remove("drag-over");
         }
-        // Add highlight to new target
-        dropTarget.classList.add("drag-over");
+        // Add highlight to new target if there is one
+        if (dropTarget) {
+          dropTarget.classList.add("drag-over");
+        }
         currentDropTarget = dropTarget;
       }
     } else if (draggingInternalFile) {
@@ -173,13 +188,15 @@ function initDragAndDrop(path) {
 
       // Check if we're entering a directory drop target
       const dropTarget = e.target.closest(".directory-drop-target");
-      if (dropTarget && dropTarget !== currentDropTarget) {
+      if (dropTarget !== currentDropTarget) {
         // Remove highlight from previous target
         if (currentDropTarget) {
           currentDropTarget.classList.remove("drag-over");
         }
-        // Add highlight to new target
-        dropTarget.classList.add("drag-over");
+        // Add highlight to new target if there is one
+        if (dropTarget) {
+          dropTarget.classList.add("drag-over");
+        }
         currentDropTarget = dropTarget;
       }
     }
