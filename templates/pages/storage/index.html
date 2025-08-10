@@ -99,6 +99,10 @@
       }
 
       function handleStartDrag(e) {
+        if (e.dataTransfer.files.length === 0) {
+          return;
+        }
+
         dropZone.classList.add("visible");
         e.preventDefault();
       }
