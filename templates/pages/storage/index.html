@@ -70,7 +70,7 @@
     }
   </style>
   {{ if .IsDirectory }}
-    <script defer src="/static/scripts/storage.js"></script>
+    <script defer src="/static/scripts/storage.js?v={{ .Meta.Version }}"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         initDragAndDrop("{{ .Path }}");

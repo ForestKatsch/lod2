@@ -34,7 +34,7 @@ function main {
 
   # If anything goes wrong, restore the archived binary.
   trap "mv '$ARCHIVE_PATH' '$BINARY_PATH'" EXIT
-  go build -o "$BINARY_PATH"
+  go build -ldflags "-X 'lod2/page.BuildTime=$(date +%Y%m%d%H%M%S)'" -o "$BINARY_PATH"
 
   #
   echo "4. Terminating any running instances..."

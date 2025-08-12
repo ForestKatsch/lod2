@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ block "title" . }}LOD2.zip{{ end }}</title>
     <!--all responses are swapped-->
-    <link rel="stylesheet" href="/static/styles/content.css" />
-    <link rel="stylesheet" href="/static/styles/global.css" />
+    <link rel="stylesheet" href="/static/styles/global.css?v={{ .Meta.Version }}" />
     <!-- favicon -->
     <link rel="icon" href="/static/favicon-32x32.png" type="image/png" />
-    <script defer src="/static/scripts/extern/htmx.min.js"></script>
-    <script defer src="/static/scripts/enhancements.js"></script>
+    <script defer src="/static/scripts/extern/htmx.min.js?v={{ .Meta.Version }}"></script>
+    <script defer src="/static/scripts/enhancements.js?v={{ .Meta.Version }}"></script>
     {{- block "meta" . }}{{ end }}
   </head>
 

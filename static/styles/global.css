@@ -1,5 +1,8 @@
-/* reset */
+/* ==========================================================================
+   RESET & FOUNDATIONS
+   ========================================================================== */
 
+/* Reset */
 * {
   margin: 0;
   padding: 0;
@@ -23,8 +26,7 @@
   text-align: inherit;
 }
 
-/* MARK: - fonts */
-
+/* Fonts */
 @font-face {
   font-family: JetBrainsMono;
   font-style: normal;
@@ -33,7 +35,9 @@
   src: url("../fonts/JetBrainsMono.woff2") format("woff2");
 }
 
-/* variables */
+/* ==========================================================================
+   DESIGN TOKENS & VARIABLES
+   ========================================================================== */
 
 :root {
   --unit: 1rem;
@@ -91,12 +95,17 @@
   }
 }
 
-/* selection color */
+/* ==========================================================================
+   BASE ELEMENTS
+   ========================================================================== */
+
+/* Selection */
 ::selection {
   background: var(--fg);
   color: var(--bg);
 }
 
+/* HTML & Body */
 html {
   font-family: "Berkeley Mono", "JetBrainsMono", "JetBrains Mono", monospace;
 
@@ -124,7 +133,11 @@ body {
   align-items: stretch;
 }
 
-/* box layouts */
+/* ==========================================================================
+   LAYOUT UTILITIES
+   ========================================================================== */
+
+/* Flexbox Layouts */
 .v,
 .h {
   display: flex;
@@ -143,6 +156,7 @@ body {
   row-gap: 0.5rem;
 }
 
+/* Gap Utilities */
 .gap-01 {
   gap: calc(var(--unit) * 0.5);
 }
@@ -159,6 +173,7 @@ body {
   justify-content: space-between;
 }
 
+/* Justify Content */
 .justify-start {
   justify-content: flex-start;
 }
@@ -171,6 +186,7 @@ body {
   justify-content: flex-end;
 }
 
+/* Align Items */
 .align-start {
   align-items: flex-start;
 }
@@ -183,6 +199,7 @@ body {
   align-items: center;
 }
 
+/* Align Self */
 .align-self-start {
   align-self: flex-start;
 }
@@ -199,15 +216,30 @@ body {
   align-self: stretch;
 }
 
-.muted {
-  color: var(--fg-secondary);
-}
-
+/* Flex Utilities */
 .flex-1 {
   flex: 1;
 }
 
-/* paper */
+/* Spacing Utilities */
+.padding-1 {
+  padding: 1rem;
+}
+
+.padding-2 {
+  padding: 2rem;
+}
+
+/* Text Utilities */
+.muted {
+  color: var(--fg-secondary);
+}
+
+/* ==========================================================================
+   COMPONENT STYLES
+   ========================================================================== */
+
+/* Paper System */
 .paper {
   outline: 1px solid var(--fg);
   box-shadow: var(--shadow);
@@ -228,15 +260,13 @@ body {
   }
 }
 
-/* inset */
 .inset {
   outline: 1px solid var(--fg);
   box-shadow: var(--inset-shadow);
   background: var(--bg);
 }
 
-/* button */
-
+/* Buttons */
 .button,
 .select {
   display: block;
@@ -307,8 +337,7 @@ body {
   }
 }
 
-/* link */
-
+/* Links */
 .link {
   text-decoration: underline;
 
@@ -327,8 +356,7 @@ body {
   }
 }
 
-/* input */
-
+/* Form Elements */
 input[type="text"],
 input[type="password"],
 textarea {
@@ -363,8 +391,7 @@ select {
   }
 }
 
-/* table */
-
+/* Tables */
 .table-container {
   width: 100%;
   overflow-x: auto;
@@ -439,7 +466,7 @@ table {
   }
 }
 
-/* */
+/* Alerts */
 .alert {
   padding: calc(1rem - 8px);
   position: relative;
@@ -464,6 +491,7 @@ table {
   }
 }
 
+/* Drop Zones */
 .drop-zone {
   z-index: 1500;
 
@@ -505,8 +533,11 @@ table {
   }
 }
 
-/*** GLOBALS (header) */
+/* ==========================================================================
+   LAYOUT SECTIONS
+   ========================================================================== */
 
+/* Header */
 #header {
   display: flex;
   flex-direction: row;
@@ -531,8 +562,7 @@ table {
   }
 }
 
-/*** GLOBALS (footer) */
-
+/* Footer */
 #footer {
   display: flex;
   flex-direction: row;
@@ -546,8 +576,76 @@ table {
   padding: 1rem;
 }
 
-/*** GLOBALS (env-banner) */
+/* Content Area */
+#content {
+  flex: 1;
 
+  h1 {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  hr {
+    margin: 0;
+    border-bottom: 1px dashed var(--fg);
+  }
+
+  > header {
+    border-bottom: 1px dashed var(--fg);
+    margin-bottom: var(--unit);
+    padding-bottom: var(--unit);
+  }
+
+  strong {
+    font-weight: bold;
+  }
+
+  .breadcrumbs {
+    flex: 1;
+    font-size: 1.2rem;
+    font-weight: bold;
+
+    min-height: 2rem;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+
+    a {
+      text-decoration: underline;
+
+      &:focus-visible {
+        background-color: var(--focus);
+        color: var(--focus-fg);
+      }
+    }
+
+    a + a::before {
+      content: "/";
+      display: inline-block;
+      margin: 0 1rem;
+    }
+  }
+
+  flex-grow: 1;
+}
+
+/* ==========================================================================
+   SPECIAL ELEMENTS
+   ========================================================================== */
+
+/* Environment Banner */
 #env-banner {
   position: fixed;
   top: 3rem;
@@ -565,7 +663,7 @@ table {
   z-index: 1000;
 }
 
-/*** GLOBALS (toasts) */
+/* Toasts */
 .toast {
   position: fixed;
   top: 0.5rem;
@@ -591,7 +689,11 @@ table {
   }
 }
 
-/* single-column */
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+
+/* Mobile & Tablet */
 @media (max-width: 50rem) {
   body {
     padding: 0;
@@ -609,20 +711,9 @@ table {
   }
 }
 
+/* Small Mobile */
 @media (max-width: 20rem) {
   #content {
     padding: 0 0.5rem;
   }
-}
-
-#content {
-  flex-grow: 1;
-}
-
-.padding-1 {
-  padding: 1rem;
-}
-
-.padding-2 {
-  padding: 2rem;
 }

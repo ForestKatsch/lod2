@@ -10,6 +10,7 @@ lod2 is a Go web application that powers [lod2.zip](https://lod2.zip/). It's bui
 
 ### Building and Running
 - `go build` - Compile the application
+- `go build -ldflags "-X 'lod2/page.BuildTime=$(date +%Y%m%d%H%M%S)'"` - Compile with cache-busting version
 - `go run main.go` - Run the application directly (listens on localhost:10800 by default)
 - `go run main.go -host 0.0.0.0 -port 8080` - Run with custom host/port
 - `go mod tidy` - Clean up module dependencies

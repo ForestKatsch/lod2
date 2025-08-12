@@ -14,6 +14,9 @@ import (
 	"github.com/Masterminds/sprig/v3"
 )
 
+// BuildTime is set at compile time using -ldflags
+var BuildTime string
+
 var templateLibrary *template.Template
 
 // A map from the path within `pages/` to the template.
@@ -149,6 +152,7 @@ type MetaData struct {
 	ShowAdmin       bool
 	AllAccessScopes []auth.AccessScope
 	AllAccessLevels []auth.AccessLevel
+	Version         string
 }
 
 // renders a single template
@@ -161,11 +165,18 @@ func Render(w http.ResponseWriter, r *http.Request, path string, data map[string
 		pageData[k] = v
 	}
 
+	// Use BuildTime for cache busting, fallback to current time if not set
+	version := BuildTime
+	if version == "" {
+		version = time.Now().Format("20060102150405")
+	}
+
 	meta := MetaData{
 		Referrer:  r.Referer(),
 		Now:       time.Now(),
 		Hostname:  r.Host,
 		ShowAdmin: auth.UserIsAdmin(r.Context()),
+		Version:   version,
 	}
 
 	meta.User = auth.GetCurrentUserInfo(r.Context())
