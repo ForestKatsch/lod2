@@ -395,6 +395,7 @@ select {
 .table-container {
   width: 100%;
   overflow-x: auto;
+  overscroll-behavior-x: none;
 }
 
 table {
